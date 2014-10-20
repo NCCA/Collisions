@@ -3,7 +3,7 @@
 
 #include <ngl/Camera.h>
 #include <ngl/Vec3.h>
-#include <ngl/TransformStack.h>
+#include <ngl/Transformation.h>
 
 /*! \brief a simple class to store a plane */
 

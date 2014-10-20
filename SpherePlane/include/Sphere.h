@@ -4,7 +4,7 @@
 
 #include <ngl/Camera.h>
 #include <ngl/ShaderLib.h>
-#include <ngl/TransformStack.h>
+#include <ngl/Transformation.h>
 #include <ngl/Vec3.h>
 
 /*! \brief a simple sphere class */
