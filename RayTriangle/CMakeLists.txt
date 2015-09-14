@@ -12,7 +12,7 @@ set(SOURCES ${PROJECT_SOURCE_DIR}/src/main.cpp
 			${PROJECT_SOURCE_DIR}/src/Triangle.cpp
 			${PROJECT_SOURCE_DIR}/include/NGLScene.h  
 			${PROJECT_SOURCE_DIR}/include/OpenGLWindow.h
-			${PROJECT_SOURCE_DIR}/include/Triange.h
+			${PROJECT_SOURCE_DIR}/include/Triangle.h
 )
 
 # see what platform we are on and set platform defines
