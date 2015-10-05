@@ -1,13 +1,14 @@
 #ifndef NGLSCENE_H__
 #define NGLSCENE_H__
-#include "OpenGLWindow.h"
 #include <ngl/BBox.h>
 #include <ngl/Camera.h>
 #include <ngl/Colour.h>
 #include <ngl/Light.h>
 #include <ngl/Text.h>
 #include <ngl/Transformation.h>
+#include <QOpenGLWindow>
 #include "Sphere.h"
+
 //----------------------------------------------------------------------------------------------------------------------
 /// @file NGLScene.h
 /// @brief this class inherits from the Qt OpenGLWindow and allows us to use NGL to draw OpenGL
@@ -21,14 +22,14 @@
 /// put in this file
 //----------------------------------------------------------------------------------------------------------------------
 
-class NGLScene : public OpenGLWindow
+class NGLScene : public QOpenGLWindow
 {
   public:
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief ctor for our NGL drawing class
     /// @param [in] parent the parent window to the class
     //----------------------------------------------------------------------------------------------------------------------
-    NGLScene(int _numSpheres, QWindow *_parent=0);
+    NGLScene(int _numSpheres);
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief dtor must close down ngl and release OpenGL resources
     //----------------------------------------------------------------------------------------------------------------------
@@ -37,11 +38,15 @@ class NGLScene : public OpenGLWindow
     /// @brief the initialize class is called once when the window is created and we have a valid GL context
     /// use this to setup any default GL stuff
     //----------------------------------------------------------------------------------------------------------------------
-    void initialize();
+    void initializeGL();
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief this is called everytime we want to draw the scene
     //----------------------------------------------------------------------------------------------------------------------
-    void render();
+    void paintGL();
+    //----------------------------------------------------------------------------------------------------------------------
+    /// @brief this is called everytime we resize
+    //----------------------------------------------------------------------------------------------------------------------
+    void resizeGL(int _w, int _h);
 
 private:
     //----------------------------------------------------------------------------------------------------------------------
@@ -116,7 +121,6 @@ private:
     /// @brief timer the ray is stored as two points this is one of the end points
     //----------------------------------------------------------------------------------------------------------------------
     ngl::Vec3 m_rayEnd2;
-
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief flag to indicate if animation is active or not
     //----------------------------------------------------------------------------------------------------------------------
@@ -125,12 +129,11 @@ private:
     /// @brief timer to change the ray position by calling update()
     //----------------------------------------------------------------------------------------------------------------------
     int m_rayUpdateTimer;
-
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief this method is called once per frame to update the sphere positions
     /// and do the collision detection
     //----------------------------------------------------------------------------------------------------------------------
-    void update();
+    void updateScene();
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief method to load transform matrices to the shader
     //----------------------------------------------------------------------------------------------------------------------
@@ -139,11 +142,6 @@ private:
     /// @brief method to load transform matrices to the shader
     //----------------------------------------------------------------------------------------------------------------------
     void loadMatricesToColourShader();
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief Qt Event called when the window is re-sized
-    /// @param [in] _event the Qt event to query for size etc
-    //----------------------------------------------------------------------------------------------------------------------
-    void resizeEvent(QResizeEvent *_event);
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief Qt Event called when a key is pressed
     /// @param [in] _event the Qt event to query for size etc
@@ -166,7 +164,6 @@ private:
     /// @param _event the Qt Event structure
     //----------------------------------------------------------------------------------------------------------------------
     void mouseReleaseEvent ( QMouseEvent *_event );
-
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief this method is called everytime the mouse wheel is moved
     /// inherited from QObject and overridden here.
@@ -178,18 +175,15 @@ private:
     /// @param _event the Qt Event structure
     //----------------------------------------------------------------------------------------------------------------------
     void timerEvent( QTimerEvent *_event);
-
-		//----------------------------------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------------------------------
 		/// @brief to get the actual hit points we need to solve the quadratic equations which will give us
 		/// two roots
 		/// @param _raystart the origin or the ray
 		/// @param _raydir the direction of the ray
 		/// @param _pos the position of the sphere
 		/// @param _radius the radius of the sphere
-
 		//----------------------------------------------------------------------------------------------------------------------
 		void drawHitPoints(ngl::Vec3 _rayStart,	ngl::Vec3 _rayDir,	ngl::Vec3 _pos, GLfloat _radius	);
-
 		//----------------------------------------------------------------------------------------------------------------------
 		/// @brief do ray sphere intercetion test
 		/// @param _rayStart the origin or the ray

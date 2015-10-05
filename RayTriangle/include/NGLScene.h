@@ -1,10 +1,10 @@
 #ifndef NGLSCENE_H__
 #define NGLSCENE_H__
-#include "OpenGLWindow.h"
 #include <ngl/Camera.h>
 #include <ngl/Colour.h>
 #include <ngl/Light.h>
 #include <ngl/Transformation.h>
+#include <QOpenGLWindow>
 #include "Triangle.h"
 //----------------------------------------------------------------------------------------------------------------------
 /// @file NGLScene.h
@@ -19,14 +19,14 @@
 /// put in this file
 //----------------------------------------------------------------------------------------------------------------------
 
-class NGLScene : public OpenGLWindow
+class NGLScene : public QOpenGLWindow
 {
   public:
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief ctor for our NGL drawing class
     /// @param [in] parent the parent window to the class
     //----------------------------------------------------------------------------------------------------------------------
-    NGLScene(int _numTriangles, QWindow *_parent=0);
+    NGLScene(int _numTriangles);
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief dtor must close down ngl and release OpenGL resources
     //----------------------------------------------------------------------------------------------------------------------
@@ -35,11 +35,15 @@ class NGLScene : public OpenGLWindow
     /// @brief the initialize class is called once when the window is created and we have a valid GL context
     /// use this to setup any default GL stuff
     //----------------------------------------------------------------------------------------------------------------------
-    void initialize();
+    void initializeGL();
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief this is called everytime we want to draw the scene
     //----------------------------------------------------------------------------------------------------------------------
-    void render();
+    void paintGL();
+    //----------------------------------------------------------------------------------------------------------------------
+    /// @brief this is called everytime we resize
+    //----------------------------------------------------------------------------------------------------------------------
+    void resizeGL(int _w, int _h);
 
 private:
     //----------------------------------------------------------------------------------------------------------------------
@@ -94,7 +98,6 @@ private:
     std::vector<Triangle *> m_triangleArray;
     /// @brief number of spheres
     int m_numTriangles;
-
     ngl::Vec3 m_rayStart;
     ngl::Vec3 m_rayEnd;
     //----------------------------------------------------------------------------------------------------------------------
@@ -105,11 +108,6 @@ private:
     /// @brief method to load transform matrices to the shader
     //----------------------------------------------------------------------------------------------------------------------
     void loadMatricesToColourShader();
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief Qt Event called when the window is re-sized
-    /// @param [in] _event the Qt event to query for size etc
-    //----------------------------------------------------------------------------------------------------------------------
-    void resizeEvent(QResizeEvent *_event);
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief Qt Event called when a key is pressed
     /// @param [in] _event the Qt event to query for size etc
@@ -132,7 +130,6 @@ private:
     /// @param _event the Qt Event structure
     //----------------------------------------------------------------------------------------------------------------------
     void mouseReleaseEvent ( QMouseEvent *_event );
-
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief this method is called everytime the mouse wheel is moved
     /// inherited from QObject and overridden here.
