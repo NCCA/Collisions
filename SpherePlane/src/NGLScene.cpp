@@ -57,13 +57,12 @@ NGLScene::~NGLScene()
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
 }
 
-void NGLScene::resizeGL(int _w, int _h)
+void NGLScene::resizeGL(QResizeEvent *_event)
 {
-  // set the viewport for openGL
-  glViewport(0,0,_w,_h);
+  m_width=_event->size().width()*devicePixelRatio();
+  m_height=_event->size().height()*devicePixelRatio();
   // now set the camera size values as the screen size has changed
-  m_cam->setShape(45,(float)_w/_h,0.05,350);
-  update();
+  m_cam.setShape(45.0f,(float)_event->size().width()/_event->size().height(),0.05f,350.0f);
 }
 
 
@@ -81,34 +80,31 @@ void NGLScene::initializeGL()
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
-  ngl::Vec3 from(0,0,15);
-  ngl::Vec3 to(0,0,0);
-  ngl::Vec3 up(0,1,0);
-  m_cam= new ngl::Camera(from,to,up);
+  ngl::Vec3 from(0.0f,0.0f,15.0f);
+  ngl::Vec3 to(0.0f,0.0f,0.0f);
+  ngl::Vec3 up(0.0f,1.0f,0.0f);
+  m_cam.set(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam->setShape(45,(float)720/576,0.05,350);
+  m_cam.setShape(45.0f,(float)720.0f/576.0f,0.05f,350.0f);
   // now to load the shader and set the values
   // grab an instance of shader manager
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
 
   (*shader)["nglDiffuseShader"]->use();
 
-  shader->setShaderParam4f("Colour",1,1,0,1);
-  shader->setShaderParam3f("lightPos",1,1,1);
-  shader->setShaderParam4f("lightDiffuse",1,1,1,1);
+  shader->setShaderParam4f("Colour",1.0f,1.0f,0.0f,1.0f);
+  shader->setShaderParam3f("lightPos",1.0f,1.0f,1.0f);
+  shader->setShaderParam4f("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
 
   (*shader)["nglColourShader"]->use();
-  shader->setShaderParam4f("Colour",1,1,1,1);
+  shader->setShaderParam4f("Colour",1.0f,1.0f,1.0f,1.0f);
 
 
   glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
 
   ngl::VAOPrimitives *prim =  ngl::VAOPrimitives::instance();
-  prim->createSphere("sphere",1.0,40);
-
-   // as re-size is not explicitly called we need to do this.
-  glViewport(0,0,width(),height());
+  prim->createSphere("sphere",1.0f,40.0f);
 }
 
 
@@ -122,8 +118,8 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat3 normalMatrix;
   ngl::Mat4 M;
   M=m_mouseGlobalTX;
-  MV=  M*m_cam->getViewMatrix();
-  MVP=  MV*m_cam->getProjectionMatrix();
+  MV=  M*m_cam.getViewMatrix();
+  MVP=  MV*m_cam.getProjectionMatrix();
   normalMatrix=MV;
   normalMatrix.inverse();
   shader->setShaderParamFromMat4("MV",MV);
@@ -139,8 +135,8 @@ void NGLScene::loadMatricesToColourShader()
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
 
-  MV=m_mouseGlobalTX*m_cam->getViewMatrix() ;
-  MVP=MV*m_cam->getProjectionMatrix();
+  MV=m_mouseGlobalTX*m_cam.getViewMatrix() ;
+  MVP=MV*m_cam.getProjectionMatrix();
   shader->setShaderParamFromMat4("MVP",MVP);
 
 }
@@ -149,6 +145,7 @@ void NGLScene::paintGL()
 {
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glViewport(0,0,m_width,m_height);
   // Rotation based on the mouse position for our global
   // transform
   ngl::Mat4 rotX;
@@ -163,17 +160,17 @@ void NGLScene::paintGL()
   m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;
   m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
 
-	m_plane->draw("nglDiffuseShader",m_cam,m_mouseGlobalTX);
-	BOOST_FOREACH(Sphere s,m_sphereArray)
+	m_plane->draw("nglDiffuseShader",&m_cam,m_mouseGlobalTX);
+	for(Sphere s :m_sphereArray)
 	{
-		s.draw("nglDiffuseShader",m_mouseGlobalTX,m_cam);
+		s.draw("nglDiffuseShader",m_mouseGlobalTX,&m_cam);
 	}
 }
 
 void NGLScene::updateScene()
 {
   static int updateCount=0;
-  BOOST_FOREACH(Sphere &s,m_sphereArray)
+  for(Sphere &s :m_sphereArray)
   {
     s.move();
 
@@ -184,11 +181,11 @@ void NGLScene::updateScene()
 	{
 		updateCount=0;
 		ngl::Vec3 pos;
-		BOOST_FOREACH(Sphere &s,m_sphereArray)
+		for(Sphere &s :m_sphereArray)
 		{
 			ngl::Random *rng=ngl::Random::instance();
-			pos.set(rng->randomNumber(6),8,rng->randomNumber(6));
-			s.set(pos,ngl::Vec3(0,-1,0),0.2);
+			pos.set(rng->randomNumber(6.0f),8.0f,rng->randomNumber(6.0f));
+			s.set(pos,ngl::Vec3(0.0f,-1.0f,0.0f),0.2f);
 		}
 
 	}
@@ -210,7 +207,7 @@ void NGLScene::spherePlaneCollide()
 {
 ngl::Vec3 p;
 GLfloat D;
-BOOST_FOREACH(Sphere &s , m_sphereArray)
+for(Sphere &s : m_sphereArray)
 {
   p=s.getPos();
 

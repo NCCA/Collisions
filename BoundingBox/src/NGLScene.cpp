@@ -10,10 +10,6 @@
 #include <ngl/Material.h>
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
-
-#include <boost/foreach.hpp>
-
-
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for x/y translation with mouse movement
 //----------------------------------------------------------------------------------------------------------------------
@@ -66,13 +62,12 @@ NGLScene::~NGLScene()
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
 }
 
-void NGLScene::resizeGL(int _w, int _h)
+void NGLScene::resizeGL(QResizeEvent *_event)
 {
-  // set the viewport for openGL
-  glViewport(0,0,_w,_h);
+  m_width=_event->size().width()*devicePixelRatio();
+  m_height=_event->size().height()*devicePixelRatio();
   // now set the camera size values as the screen size has changed
-  m_cam->setShape(45,(float)_w/_h,0.05,350);
-  update();
+  m_cam.setShape(45,(float)_event->size().width()/_event->size().height(),0.05f,350.0f);
 }
 
 
@@ -90,36 +85,34 @@ void NGLScene::initializeGL()
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
-  ngl::Vec3 from(0,80,80);
-  ngl::Vec3 to(0,0,0);
-  ngl::Vec3 up(0,1,0);
-  m_cam= new ngl::Camera(from,to,up);
+  ngl::Vec3 from(0.0f,80.0f,80.0f);
+  ngl::Vec3 to(0.0f,0.0f,0.0f);
+  ngl::Vec3 up(0.0f,1.0f,0.0f);
+  m_cam.set(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam->setShape(45,(float)720.0/576.0,0.5,150);
+  m_cam.setShape(45.0f,(float)720.0f/576.0f,0.5f,150.0f);
   // now to load the shader and set the values
   // grab an instance of shader manager
    ngl::ShaderLib *shader=ngl::ShaderLib::instance();
    (*shader)["nglDiffuseShader"]->use();
 
-   shader->setShaderParam4f("Colour",1,1,0,1);
-   shader->setShaderParam3f("lightPos",1,1,1);
-   shader->setShaderParam4f("lightDiffuse",1,1,1,1);
+   shader->setShaderParam4f("Colour",1.0f,1.0f,0.0f,1.0f);
+   shader->setShaderParam3f("lightPos",1.0f,1.0f,1.0f);
+   shader->setShaderParam4f("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
 
    (*shader)["nglColourShader"]->use();
-   shader->setShaderParam4f("Colour",1,1,1,1);
+   shader->setShaderParam4f("Colour",1.0f,1.0f,1.0f,1.0f);
 
-   glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
+  glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
 
   ngl::VAOPrimitives *prim =  ngl::VAOPrimitives::instance();
-  prim->createSphere("sphere",1.0,40);
+  prim->createSphere("sphere",1.0f,40.0f);
  // create our Bounding Box, needs to be done once we have a gl context as we create VAO for drawing
-  m_bbox = new ngl::BBox(ngl::Vec3(0,0,0),80,80,80);
+  m_bbox.reset( new ngl::BBox(ngl::Vec3(),80.0f,80.0f,80.0f));
 
   m_bbox->setDrawMode(GL_LINE);
 
-  // as re-size is not explicitly called we need to do this.
-  glViewport(0,0,width(),height());
   m_sphereUpdateTimer=startTimer(40);
 
 }
@@ -133,8 +126,8 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
-  MV= m_mouseGlobalTX*m_cam->getViewMatrix() ;
-  MVP=MV*m_cam->getProjectionMatrix() ;
+  MV= m_mouseGlobalTX*m_cam.getViewMatrix() ;
+  MVP=MV*m_cam.getProjectionMatrix() ;
   normalMatrix=MV;
   normalMatrix.inverse();
   shader->setShaderParamFromMat4("MVP",MVP);
@@ -148,8 +141,8 @@ void NGLScene::loadMatricesToColourShader()
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
 
-  MV= m_mouseGlobalTX*m_cam->getViewMatrix() ;
-  MVP=MV*m_cam->getProjectionMatrix();
+  MV= m_mouseGlobalTX*m_cam.getViewMatrix() ;
+  MVP=MV*m_cam.getProjectionMatrix();
   shader->setShaderParamFromMat4("MVP",MVP);
 
 }
@@ -159,7 +152,8 @@ void NGLScene::paintGL()
 {
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   // Rotation based on the mouse position for our global
+  glViewport(0,0,m_width,m_height);
+  // Rotation based on the mouse position for our global
    // transform
    ngl::Mat4 rotX;
    ngl::Mat4 rotY;
@@ -181,9 +175,9 @@ void NGLScene::paintGL()
 
   shader->use("nglDiffuseShader");
 
-	BOOST_FOREACH(Sphere s, m_sphereArray)
+	for(Sphere s : m_sphereArray)
 	{
-		s.draw("nglDiffuseShader",m_mouseGlobalTX,m_cam);
+		s.draw("nglDiffuseShader",m_mouseGlobalTX,&m_cam);
 	}
 
 }
@@ -191,7 +185,7 @@ void NGLScene::paintGL()
 //----------------------------------------------------------------------------------------------------------------------
 void NGLScene::updateScene()
 {
-	BOOST_FOREACH(Sphere &s, m_sphereArray)
+	for(Sphere &s : m_sphereArray)
 	{
 		s.move();
 	}
@@ -363,7 +357,7 @@ void NGLScene::BBoxCollision()
   // no collision
   GLfloat D;
   // Loop for each sphere in the vector list
-  BOOST_FOREACH(Sphere &s, m_sphereArray)
+  for(Sphere &s : m_sphereArray)
   {
     p=s.getPos();
     //Now we need to check the Sphere agains all 6 planes of the BBOx

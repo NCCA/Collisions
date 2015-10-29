@@ -37,13 +37,11 @@ NGLScene::~NGLScene()
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
 }
 
-void NGLScene::resizeGL(int _w, int _h)
+void NGLScene::resizeGL(QResizeEvent *_event)
 {
-    // set the viewport for openGL
-  glViewport(0,0,_w,_h);
-  // now set the camera size values as the screen size has changed
-  m_cam->setShape(45,(float)_w/_h,0.05,350);
-  update();
+  m_width=_event->size().width()*devicePixelRatio();
+  m_height=_event->size().height()*devicePixelRatio();
+  m_cam.setShape(45.0f,(float)_event->size().width()/_event->size().height(),0.05f,350.0f);
 }
 
 
@@ -58,52 +56,48 @@ void NGLScene::initializeGL()
   glEnable(GL_DEPTH_TEST);
   // enable multisampling for smoother drawing
   glEnable(GL_MULTISAMPLE);
-  ngl::Vec3 from(0,0,-20);
-  ngl::Vec3 to(0,0,0);
-  ngl::Vec3 up(0,1,0);
-  m_cam= new ngl::Camera(from,to,up);
+  ngl::Vec3 from(0.0f,0.0f,-20.0f);
+  ngl::Vec3 to(0.0f,0.0f,0.0f);
+  ngl::Vec3 up(0.0f,1.0f,0.0f);
+  m_cam.set(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam->setShape(45,(float)720.0/576.0,0.5,150);
+  m_cam.setShape(45,(float)720.0f/576.0f,0.5f,150.0f);
   // now to load the shader and set the values
   // grab an instance of shader manager
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   (*shader)["nglDiffuseShader"]->use();
 
-  shader->setShaderParam4f("Colour",1,1,1,1);
-  shader->setShaderParam3f("lightPos",1,1,1);
-  shader->setShaderParam4f("lightDiffuse",1,1,1,1);
+  shader->setShaderParam4f("Colour",1.0f,1.0f,1.0f,1.0f);
+  shader->setShaderParam3f("lightPos",1.0f,1.0f,1.0f);
+  shader->setShaderParam4f("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
 
   glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
 
   ngl::VAOPrimitives *prim =  ngl::VAOPrimitives::instance();
-  prim->createSphere("sphere",1.0,40);
+  prim->createSphere("sphere",1.0f,40.0f);
   // create vectors for the position and direction
   ngl::Vec3 pos;
   ngl::Vec3 dir;
-  m_sphereArray.resize(4);
   // now set two bigger spheres with no movement
-  pos.set(-10,0,0);
-  dir.set(0,0,0);
-  m_sphereArray[0].set(pos,dir,2.0);
-  m_sphereArray[0].setColour(ngl::Colour(1,1,0));
-  pos.set(10,0,0);
-  dir.set(0,0,0);
-  m_sphereArray[1].set(pos,dir,2.0);
-  m_sphereArray[1].setColour(ngl::Colour(1,1,0));
+  pos.set(-10.0f,0.0f,0.0f);
+  dir.set(0.0f,0.0f,0.0f);
+  m_sphereArray[0].set(pos,dir,2.0f);
+  m_sphereArray[0].setColour(ngl::Colour(1.0f,1.0f,0.0f));
+  pos.set(10.0f,0.0f,0.0f);
+  dir.set(0.0f,0.0f,0.0f);
+  m_sphereArray[1].set(pos,dir,2.0f);
+  m_sphereArray[1].setColour(ngl::Colour(1.0f,1.0f,0.0f));
   // and two smaller ones to move and bounce.
-  pos.set(-7,0,0);
-  dir.set(0.5,0,0);
-  m_sphereArray[2].set(pos,dir,1.0);
-  m_sphereArray[2].setColour(ngl::Colour(1,0,0));
+  pos.set(-7.0f,0.0f,0.0f);
+  dir.set(0.5f,0.0f,0.0f);
+  m_sphereArray[2].set(pos,dir,1.0f);
+  m_sphereArray[2].setColour(ngl::Colour(1.0f,0.0f,0.0f));
 
-  pos.set(7,0,0);
-  dir.set(-0.5,0,0);
-  m_sphereArray[3].set(pos,dir,1.0);
-  m_sphereArray[3].setColour(ngl::Colour(0,0,1));
-
-   // as re-size is not explicitly called we need to do this.
-  glViewport(0,0,width(),height());
+  pos.set(7.0f,0.0f,0.0f);
+  dir.set(-0.5f,0.0f,0.0f);
+  m_sphereArray[3].set(pos,dir,1.0f);
+  m_sphereArray[3].setColour(ngl::Colour(0.0f,0.0f,1.0f));
   m_sphereUpdateTimer=startTimer(20);
 
 }
@@ -115,6 +109,7 @@ void NGLScene::paintGL()
 {
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glViewport(0,0,m_width,m_height);
   // Rotation based on the mouse position for our global
   // transform
   ngl::Mat4 rotX;
@@ -132,7 +127,7 @@ void NGLScene::paintGL()
 
 	BOOST_FOREACH(Sphere s, m_sphereArray)
 	{
-		s.draw("nglDiffuseShader", m_mouseGlobalTX, m_cam);
+		s.draw("nglDiffuseShader", m_mouseGlobalTX, &m_cam);
 	}
 }
 
