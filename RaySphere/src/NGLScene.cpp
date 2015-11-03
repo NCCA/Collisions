@@ -10,8 +10,6 @@
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
 
-#include <boost/foreach.hpp>
-
 
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for x/y translation with mouse movement
@@ -68,9 +66,14 @@ void NGLScene::resizeGL(QResizeEvent *_event)
   m_width=_event->size().width()*devicePixelRatio();
   m_height=_event->size().height()*devicePixelRatio();
   // now set the camera size values as the screen size has changed
-  m_cam.setShape(45,(float)_event->size().width()/_event->size().height(),0.05f,350.0f);
+  m_cam.setShape(45.0f,(float)_event->size().width()/_event->size().height(),0.05f,350.0f);
 }
-
+void NGLScene::resizeGL(int _w , int _h)
+{
+  m_cam.setShape(45.0f,(float)_w/_h,0.05f,350.0f);
+  m_width=_w*devicePixelRatio();
+  m_height=_h*devicePixelRatio();
+}
 
 void NGLScene::initializeGL()
 {

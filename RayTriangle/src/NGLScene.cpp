@@ -9,7 +9,6 @@
 #include <ngl/VAOPrimitives.h>
 #include <ngl/ShaderLib.h>
 #include <ngl/Random.h>
-#include <boost/foreach.hpp>
 
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for x/y translation with mouse movement
@@ -54,6 +53,12 @@ void NGLScene::resizeGL(QResizeEvent *_event)
   m_height=_event->size().height()*devicePixelRatio();
   // now set the camera size values as the screen size has changed
   m_cam.setShape(45,(float)_event->size().width()/_event->size().height(),0.05f,350.0f);
+}
+void NGLScene::resizeGL(int _w , int _h)
+{
+  m_cam.setShape(45.0f,(float)_w/_h,0.05f,350.0f);
+  m_width=_w*devicePixelRatio();
+  m_height=_h*devicePixelRatio();
 }
 
 
@@ -191,7 +196,7 @@ void NGLScene::paintGL()
 	}
 	// draw all the triangles
 	shader->use("nglDiffuseShader");
-	BOOST_FOREACH(Triangle *t, m_triangleArray)
+	for(Triangle *t : m_triangleArray)
 	{
 		shader->setRegisteredUniform4f("Colour",1,1,0,0);
 		t->rayTriangleIntersect(m_rayStart,m_rayEnd);

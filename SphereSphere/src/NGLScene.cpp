@@ -9,7 +9,6 @@
 #include <ngl/VAOPrimitives.h>
 #include <ngl/Random.h>
 #include <ngl/ShaderLib.h>
-#include <boost/foreach.hpp>
 
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -42,6 +41,12 @@ void NGLScene::resizeGL(QResizeEvent *_event)
   m_width=_event->size().width()*devicePixelRatio();
   m_height=_event->size().height()*devicePixelRatio();
   m_cam.setShape(45.0f,(float)_event->size().width()/_event->size().height(),0.05f,350.0f);
+}
+void NGLScene::resizeGL(int _w , int _h)
+{
+  m_cam.setShape(45.0f,(float)_w/_h,0.05f,350.0f);
+  m_width=_w*devicePixelRatio();
+  m_height=_h*devicePixelRatio();
 }
 
 
@@ -125,7 +130,7 @@ void NGLScene::paintGL()
   m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
 
 
-	BOOST_FOREACH(Sphere s, m_sphereArray)
+	for(Sphere s : m_sphereArray)
 	{
 		s.draw("nglDiffuseShader", m_mouseGlobalTX, &m_cam);
 	}

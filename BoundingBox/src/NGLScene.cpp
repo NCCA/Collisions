@@ -42,10 +42,7 @@ NGLScene::NGLScene(int _numSpheres)
 
 void NGLScene::resetSpheres()
 {
-	std::vector<Sphere>::iterator begin=m_sphereArray.begin();
-	std::vector<Sphere>::iterator end=m_sphereArray.end();
-	m_sphereArray.erase(begin,end);
-	ngl::Vec3 pos(0,0,0);
+	m_sphereArray.clear();
 	ngl::Vec3 dir;
 	ngl::Random *rng=ngl::Random::instance();
 	// loop and create the initial particle list
@@ -69,7 +66,12 @@ void NGLScene::resizeGL(QResizeEvent *_event)
   // now set the camera size values as the screen size has changed
   m_cam.setShape(45,(float)_event->size().width()/_event->size().height(),0.05f,350.0f);
 }
-
+void NGLScene::resizeGL(int _w , int _h)
+{
+  m_cam.setShape(45.0f,(float)_w/_h,0.05f,350.0f);
+  m_width=_w*devicePixelRatio();
+  m_height=_h*devicePixelRatio();
+}
 
 void NGLScene::initializeGL()
 {
