@@ -2,8 +2,9 @@
 #include <ngl/ShaderLib.h>
 #include <ngl/Util.h>
 #include <ngl/Vec3.h>
-#include <ngl/VertexArrayObject.h>
-#include <ngl/VAOPrimitives.h>
+#include <ngl/VAOFactory.h>
+#include "MultiBufferIndexVAO.h"
+#include <ngl/SimpleVAO.h>
 Plane::Plane(const ngl::Vec3 &_center, GLfloat _w, GLfloat _d )
 {
   //store the values
@@ -76,7 +77,7 @@ void Plane::draw(const std::string &_shaderName, ngl::Camera *_cam , const ngl::
 
   ngl::Vec3 normal=ngl::calcNormal(m_verts[0],m_verts[2],m_verts[1]);
 
-	for(int i=0; i<4; ++i)
+  for(size_t i=0; i<4; ++i)
 	{
 		normals[i]=normal;
 	}
@@ -84,29 +85,32 @@ void Plane::draw(const std::string &_shaderName, ngl::Camera *_cam , const ngl::
 	ngl::ShaderLib *shader=ngl::ShaderLib::instance();
 	(*shader)[_shaderName]->use();
 	shader->setRegisteredUniform4f("Colour",1,1,0,0);
-    ngl::VertexArrayObject *vao= ngl::VertexArrayObject::createVOA(GL_TRIANGLES);
-    vao->bind();
-    vao->setIndexedData(4*sizeof(ngl::Vec3),m_verts[0].m_x,sizeof(indices),&indices[0],GL_UNSIGNED_BYTE);
-    vao->setVertexAttributePointer(0,3,GL_FLOAT,sizeof(ngl::Vec3),0);
-    vao->setIndexedData(4*sizeof(ngl::Vec3),normals[0].m_x,sizeof(indices),&indices[0],GL_UNSIGNED_BYTE);
-    vao->setVertexAttributePointer(2,3,GL_FLOAT,sizeof(ngl::Vec3),0);
-    vao->setNumIndices(6);
-    loadMatricesToShader(_cam);
-    vao->draw();
-    vao->removeVOA();
+  std::unique_ptr<ngl::AbstractVAO> vao(ngl::VAOFactory::createVAO("multiBufferIndexVAO",GL_TRIANGLES));
 
+  vao->bind();
+  vao->setData(MultiBufferIndexVAO::VertexData( 4*sizeof(ngl::Vec3),m_verts[0].m_x));
+  vao->setVertexAttributePointer(0,3,GL_FLOAT,sizeof(ngl::Vec3),0);
+  vao->setData(MultiBufferIndexVAO::VertexData( 4*sizeof(ngl::Vec3),normals[0].m_x));
 
+  vao->setVertexAttributePointer(2,3,GL_FLOAT,sizeof(ngl::Vec3),0);
 
-		std::vector<ngl::Vec3> lines(2);
-		lines[0]=m_center;
-		lines[1]=(m_normal*4.0);
-		vao= ngl::VertexArrayObject::createVOA(GL_LINES);
-		vao->bind();
-		vao->setData(2*sizeof(ngl::Vec3),lines[0].m_x);
-		vao->setVertexAttributePointer(0,3,GL_FLOAT,sizeof(ngl::Vec3),0);
-		vao->setNumIndices(2);
-		vao->draw();
-		vao->removeVOA();
+  dynamic_cast<MultiBufferIndexVAO *>(vao.get())->setIndices(sizeof(indices),&indices[0], GL_UNSIGNED_BYTE);
+
+  vao->setNumIndices(6);
+  loadMatricesToShader(_cam);
+  vao->draw();
+
+  // now draw normal
+
+  std::vector<ngl::Vec3> lines(2);
+  lines[0]=m_center;
+  lines[1]=(m_normal*4.0);
+  vao.reset( ngl::VAOFactory::createVAO("simpleVAO",GL_LINES));
+  vao->bind();
+  vao->setData(ngl::SimpleVAO::VertexData(2*sizeof(ngl::Vec3),lines[0].m_x));
+  vao->setVertexAttributePointer(0,3,GL_FLOAT,sizeof(ngl::Vec3),0);
+  vao->setNumIndices(2);
+  vao->draw();
 
 
 }

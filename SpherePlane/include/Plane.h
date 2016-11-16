@@ -1,5 +1,6 @@
-#ifndef _PLANE_H_
-#define _PLANE_H_
+// note NGL uses PLANE_H_
+#ifndef MYPLANE_H_
+#define MYPLANE_H_
 
 #include <ngl/Camera.h>
 #include <ngl/Vec3.h>

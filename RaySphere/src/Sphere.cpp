@@ -31,6 +31,7 @@ void Sphere::loadMatricesToShader( ngl::Transformation &_tx,  const ngl::Mat4 &_
 }
 
 
+
 void Sphere::draw(const std::string &_shaderName,const ngl::Mat4 &_globalMat, ngl::Camera *_cam )const
 
 {

@@ -1,6 +1,8 @@
 #include "Triangle.h"
 #include <ngl/Util.h>
 #include <ngl/VAOPrimitives.h>
+#include <ngl/VAOFactory.h>
+#include <ngl/MultiBufferVAO.h>
 
 Triangle::Triangle(ngl::Vec3 _p0, ngl::Vec3 _p1,  ngl::Vec3 _p2)
 {
@@ -29,11 +31,11 @@ Triangle::Triangle(ngl::Vec3 _p0, ngl::Vec3 _p1,  ngl::Vec3 _p2)
   m_normals.push_back(normal);
   // first we draw the triangle
   // we build up a vertex array for the lines of the start and end points and draw
-  m_vao= ngl::VertexArrayObject::createVOA(GL_TRIANGLES);
+  m_vao.reset( ngl::VAOFactory::createVAO("multiBufferVAO",GL_TRIANGLES));
   m_vao->bind();
-  m_vao->setData(3*sizeof(ngl::Vec3),m_points[0].m_x);
+  m_vao->setData(ngl::MultiBufferVAO::VertexData(3*sizeof(ngl::Vec3),m_points[0].m_x));
   m_vao->setVertexAttributePointer(0,3,GL_FLOAT,sizeof(ngl::Vec3),0);
-  m_vao->setData(3*sizeof(ngl::Vec3),m_normals[0].m_x);
+  m_vao->setData(ngl::MultiBufferVAO::VertexData(3*sizeof(ngl::Vec3),m_normals[0].m_x));
   m_vao->setVertexAttributePointer(2,3,GL_FLOAT,sizeof(ngl::Vec3),0);
   m_vao->setNumIndices(3);
   m_vao->unbind();
@@ -41,7 +43,6 @@ Triangle::Triangle(ngl::Vec3 _p0, ngl::Vec3 _p1,  ngl::Vec3 _p2)
 
 Triangle::~Triangle()
 {
-  m_vao->removeVOA();
 }
 
 void Triangle::loadMatricesToShader( ngl::Transformation &_tx,const ngl::Mat4 &_globalMat, ngl::Camera *_cam ) const

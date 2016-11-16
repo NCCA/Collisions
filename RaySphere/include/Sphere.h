@@ -1,5 +1,5 @@
-#ifndef SPHERE_H__
-#define SPHERE_H__
+#ifndef SPHERE_H_
+#define SPHERE_H_
 
 
 #include <ngl/Camera.h>
@@ -36,11 +36,12 @@ private :
 	/*! the radius of the sphere */
 	GLfloat m_radius;
 	/*! flag to indicate if the sphere has been hit by ray */
-	bool m_hit;
+  bool m_hit;
 	// the last position of the sphere
   ngl::Vec3 m_lastPos;
 	// the next position of the sphere
   ngl::Vec3 m_nextPos;
+
 
 
 };

@@ -18,13 +18,17 @@ CONFIG-=app_bundle
 SOURCES+= $$PWD/src/NGLScene.cpp    \
 					$$PWD/src/Sphere.cpp \
 					$$PWD/src/Plane.cpp \
-					$$PWD/src/main.cpp
+          $$PWD/src/main.cpp \
+          $$PWD/src/MultiBufferIndexVAO.cpp
+
 # same for the .h files
 HEADERS+= $$PWD/include/NGLScene.h \
 					$$PWD/include/Plane.h \
-					$$PWD/include/Sphere.h
+          $$PWD/include/Sphere.h \
+          $$PWD/include/WindowParams.h \
+          $$PWD/include/MultiBufferIndexVAO.h
 # and add the include dir into the search path for Qt and make
-INCLUDEPATH +=./include
+INCLUDEPATH +=$$PWD/include
 # where our exe is going to live (root of project)
 DESTDIR=./
 # add the glsl shader files

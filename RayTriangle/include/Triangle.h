@@ -1,12 +1,12 @@
-#ifndef TRIANGLE_H__
-#define TRIANGLE_H__
+#ifndef TRIANGLE_H_
+#define TRIANGLE_H_
 
 /// @brief  simple class to hold a triangle
 #include <ngl/Camera.h>
 #include <ngl/Vec3.h>
 #include <ngl/ShaderLib.h>
 #include <ngl/Transformation.h>
-#include <ngl/VertexArrayObject.h>
+#include <ngl/AbstractVAO.h>
 class Triangle
 {
 
@@ -44,7 +44,7 @@ private :
 	// the actual hit point of the tri
   ngl::Vec3 m_hitPoint;
   /// @brief our vertex array object
-  ngl::VertexArrayObject *m_vao;
+  std::unique_ptr<ngl::AbstractVAO> m_vao;
 
 };
 

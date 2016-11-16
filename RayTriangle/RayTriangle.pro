@@ -1,5 +1,5 @@
 # This specifies the exe name
-TARGET=BoundingBox
+TARGET=RayTriangle
 # where to put the .o files
 OBJECTS_DIR=obj
 # core Qt Libs to use add more here if needed.
@@ -20,7 +20,8 @@ SOURCES+= $$PWD/src/NGLScene.cpp    \
 					$$PWD/src/main.cpp
 # same for the .h files
 HEADERS+= $$PWD/include/NGLScene.h \
-					$$PWD/include/Triangle.h
+          $$PWD/include/Triangle.h \
+          $$PWD/include/WindowParams.h
 # and add the include dir into the search path for Qt and make
 INCLUDEPATH +=./include
 # where our exe is going to live (root of project)

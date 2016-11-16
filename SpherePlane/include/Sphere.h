@@ -1,5 +1,5 @@
-#ifndef __SPHERE_H__
-#define __SPHERE_H__
+#ifndef SPHERE_H_
+#define SPHERE_H_
 
 
 #include <ngl/Camera.h>
