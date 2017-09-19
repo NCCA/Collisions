@@ -29,9 +29,9 @@ void Sphere::loadMatricesToShader( ngl::Transformation &_transform,const ngl::Ma
   MVP=MV*_cam->getProjectionMatrix();
   normalMatrix=MV;
   normalMatrix.inverse();
-  shader->setShaderParamFromMat4("MVP",MVP);
-  shader->setShaderParamFromMat3("normalMatrix",normalMatrix);
-  shader->setRegisteredUniformFromColour("Colour",m_colour);
+  shader->setUniform("MVP",MVP);
+  shader->setUniform("normalMatrix",normalMatrix);
+  shader->setUniform("Colour",m_colour);
 
 }
 

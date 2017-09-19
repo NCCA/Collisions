@@ -59,8 +59,8 @@ void Triangle::loadMatricesToShader( ngl::Transformation &_tx,const ngl::Mat4 &_
 
   normalMatrix=MV;
   normalMatrix.inverse();
-  shader->setShaderParamFromMat4("MVP",MVP);
-  shader->setShaderParamFromMat3("normalMatrix",normalMatrix);
+  shader->setUniform("MVP",MVP);
+  shader->setUniform("normalMatrix",normalMatrix);
 }
 
 
@@ -94,8 +94,7 @@ void Triangle::draw( const std::string &_shaderName, const ngl::Mat4 &_globalMat
 	// draw the cube to indicate vertex 0
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	t.setPosition(m_v0);
-	t.setScale(0.06,0.06,0.06);
-//		shader->setShaderParamFromMat4(_shaderName,"ModelMatrix",_transformStack.getCurrAndGlobal().getMatrix());
+  t.setScale(0.06f,0.06f,0.06f);
   loadMatricesToShader(t,_globalMat,_cam);
     prim->draw("cube");
 
@@ -124,7 +123,7 @@ void Triangle::rayTriangleIntersect(ngl::Vec3 _rayStart,ngl::Vec3 _rayEnd )
   // calculate the determinant
   det = m_edge1.dot(pvec);
   // if this is 0 no hit
-  if (det > -0.00001f && det < 0.00001)
+  if (det > -0.00001f && det < 0.00001f)
   {
     return ;
   }

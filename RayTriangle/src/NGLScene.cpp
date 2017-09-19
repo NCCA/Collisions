@@ -69,12 +69,12 @@ void NGLScene::initializeGL()
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   (*shader)["nglDiffuseShader"]->use();
 
-  shader->setShaderParam4f("Colour",1.0f,1.0f,1.0f,1.0f);
-  shader->setShaderParam3f("lightPos",1.0f,1.0f,1.0f);
-  shader->setShaderParam4f("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
+  shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
+  shader->setUniform("lightPos",1.0f,1.0f,1.0f);
+  shader->setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
 
   (*shader)["nglColourShader"]->use();
-  shader->setShaderParam4f("Colour",1.0f,1.0f,1.0f,1.0f);
+  shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
 
   glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
 
@@ -109,8 +109,8 @@ void NGLScene::loadMatricesToShader()
   MVP=  m_transform.getMatrix()*m_mouseGlobalTX*m_cam.getVPMatrix();
   normalMatrix=m_transform.getMatrix()*m_mouseGlobalTX*m_cam.getViewMatrix();
   normalMatrix.inverse();
-  shader->setShaderParamFromMat4("MVP",MVP);
-  shader->setShaderParamFromMat3("normalMatrix",normalMatrix);
+  shader->setUniform("MVP",MVP);
+  shader->setUniform("normalMatrix",normalMatrix);
 }
 
 void NGLScene::loadMatricesToColourShader()
@@ -120,7 +120,7 @@ void NGLScene::loadMatricesToColourShader()
   ngl::Mat4 MVP;
 
   MVP=m_transform.getMatrix()*m_mouseGlobalTX*m_cam.getVPMatrix() ;
-  shader->setShaderParamFromMat4("MVP",MVP);
+  shader->setUniform("MVP",MVP);
 
 }
 
@@ -153,7 +153,7 @@ void NGLScene::paintGL()
 	// draw a cube at the ray start points
 	m_transform.reset();
 	{
-		shader->setRegisteredUniform4f("Colour",1,1,1,1);
+    shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
 		m_transform.setPosition(m_rayStart);
 		loadMatricesToShader();
 		prim->draw("cube");
@@ -178,7 +178,7 @@ void NGLScene::paintGL()
 	shader->use("nglDiffuseShader");
   for(auto &t : m_triangleArray)
 	{
-		shader->setRegisteredUniform4f("Colour",1,1,0,0);
+    shader->setUniform("Colour",1.0f,1.0f,0.0f,0.0f);
 		t->rayTriangleIntersect(m_rayStart,m_rayEnd);
 		t->draw("nglDiffuseShader",m_mouseGlobalTX,&m_cam);
 	}

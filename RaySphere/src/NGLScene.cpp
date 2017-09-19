@@ -9,8 +9,6 @@
 #include <ngl/Material.h>
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
-#include <ngl/VAOFactory.h>
-#include <ngl/VertexArrayObject.h>
 
 
 
@@ -80,12 +78,12 @@ void NGLScene::initializeGL()
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   (*shader)["nglDiffuseShader"]->use();
 
-  shader->setShaderParam4f("Colour",1.0f,1.0f,1.0f,1.0f);
-  shader->setShaderParam3f("lightPos",1.0f,1.0f,1.0f);
-  shader->setShaderParam4f("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
+  shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
+  shader->setUniform("lightPos",1.0f,1.0f,1.0f);
+  shader->setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
 
   (*shader)["nglColourShader"]->use();
-  shader->setShaderParam4f("Colour",1.0f,1.0f,1.0f,1.0f);
+  shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
 
   glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
 
@@ -113,8 +111,8 @@ void NGLScene::loadMatricesToShader()
   MVP=  MV*m_cam.getProjectionMatrix();
   normalMatrix=MV;
   normalMatrix.inverse();
-  shader->setShaderParamFromMat4("MVP",MVP);
-  shader->setShaderParamFromMat3("normalMatrix",normalMatrix);
+  shader->setUniform("MVP",MVP);
+  shader->setUniform("normalMatrix",normalMatrix);
 }
 
 void NGLScene::loadMatricesToColourShader()
@@ -124,7 +122,7 @@ void NGLScene::loadMatricesToColourShader()
    ngl::Mat4 MVP;
 
    MVP=m_transform.getMatrix() *m_mouseGlobalTX*m_cam.getVPMatrix();
-   shader->setRegisteredUniformFromMat4("MVP",MVP);
+   shader->setUniform("MVP",MVP);
 
 }
 
@@ -157,7 +155,7 @@ void NGLScene::paintGL()
   // draw a cube at the ray start points
   m_transform.reset();
   {
-    shader->setRegisteredUniform4f("Colour",1.0f,1.0f,1.0f,1);
+    shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
     m_transform.setPosition(m_rayStart);
     loadMatricesToShader();
     prim->draw("cube");
@@ -174,7 +172,7 @@ void NGLScene::paintGL()
 
 	for(Sphere s : m_sphereArray)
 	{
-		shader->setRegisteredUniform4f("Colour",1.0f,1.0f,0.0f,1.0f);
+    shader->setUniform("Colour",1.0f,1.0f,0.0f,1.0f);
 
 		s.draw("nglDiffuseShader",m_mouseGlobalTX,&m_cam);
 		if(s.isHit())
@@ -189,7 +187,7 @@ void NGLScene::paintGL()
 	m_transform.reset();
 	{
 		shader->use("nglColourShader");
-		shader->setRegisteredUniform4f("Colour",1,1,1,1);
+    shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
     std::unique_ptr<ngl::AbstractVAO> vao( ngl::VAOFactory::createVAO("simpleVAO",GL_LINES));
 
     vao->bind();
@@ -245,7 +243,7 @@ if(discrim >= 0.0)
 	// draw the hit points
 	ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
 	ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-	shader->setRegisteredUniform4f("Colour",1,0,0,0);
+  shader->setUniform("Colour",1.0f,0.0f,0.0f,0.0f);
 	m_transform.reset();
 	{
 		m_transform.setPosition(h1);
@@ -255,7 +253,7 @@ if(discrim >= 0.0)
 
 	m_transform.reset();
 	{
-		shader->setRegisteredUniform4f("Colour",0,1,0,0);
+    shader->setUniform("Colour",0.0f,1.0f,0.0f,0.0f);
 		m_transform.setPosition(h2);
 
     loadMatricesToShader();

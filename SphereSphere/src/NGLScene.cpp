@@ -56,9 +56,9 @@ void NGLScene::initializeGL()
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   (*shader)["nglDiffuseShader"]->use();
 
-  shader->setShaderParam4f("Colour",1.0f,1.0f,1.0f,1.0f);
-  shader->setShaderParam3f("lightPos",1.0f,1.0f,1.0f);
-  shader->setShaderParam4f("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
+  shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
+  shader->setUniform("lightPos",1.0f,1.0f,1.0f);
+  shader->setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
 
   glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
 

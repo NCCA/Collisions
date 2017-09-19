@@ -63,8 +63,8 @@ void Plane::loadMatricesToShader(  ngl::Camera *_cam ) const
   MVP=MV*_cam->getProjectionMatrix() ;
   normalMatrix=MV;
   normalMatrix.inverse();
-  shader->setShaderParamFromMat4("MVP",MVP);
-  shader->setShaderParamFromMat3("normalMatrix",normalMatrix);
+  shader->setUniform("MVP",MVP);
+  shader->setUniform("normalMatrix",normalMatrix);
 }
 
 
@@ -84,7 +84,7 @@ void Plane::draw(const std::string &_shaderName, ngl::Camera *_cam , const ngl::
 	GLubyte indices[]={0,1,3,3,2,1};
 	ngl::ShaderLib *shader=ngl::ShaderLib::instance();
 	(*shader)[_shaderName]->use();
-	shader->setRegisteredUniform4f("Colour",1,1,0,0);
+  shader->setUniform("Colour",1.0f,1.0f,0.0f,0.0f);
   std::unique_ptr<ngl::AbstractVAO> vao(ngl::VAOFactory::createVAO("multiBufferIndexVAO",GL_TRIANGLES));
 
   vao->bind();

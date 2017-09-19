@@ -80,12 +80,12 @@ void NGLScene::initializeGL()
    ngl::ShaderLib *shader=ngl::ShaderLib::instance();
    (*shader)["nglDiffuseShader"]->use();
 
-   shader->setShaderParam4f("Colour",1.0f,1.0f,0.0f,1.0f);
-   shader->setShaderParam3f("lightPos",1.0f,1.0f,1.0f);
-   shader->setShaderParam4f("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
+   shader->setUniform("Colour",1.0f,1.0f,0.0f,1.0f);
+   shader->setUniform("lightPos",1.0f,1.0f,1.0f);
+   shader->setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
 
    (*shader)["nglColourShader"]->use();
-   shader->setShaderParam4f("Colour",1.0f,1.0f,1.0f,1.0f);
+   shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
 
   glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
 
@@ -113,8 +113,8 @@ void NGLScene::loadMatricesToShader()
   MVP=MV*m_cam.getProjectionMatrix() ;
   normalMatrix=MV;
   normalMatrix.inverse();
-  shader->setShaderParamFromMat4("MVP",MVP);
-  shader->setShaderParamFromMat3("normalMatrix",normalMatrix);
+  shader->setUniform("MVP",MVP);
+  shader->setUniform("normalMatrix",normalMatrix);
 }
 
 void NGLScene::loadMatricesToColourShader()
@@ -126,7 +126,7 @@ void NGLScene::loadMatricesToColourShader()
 
   MV= m_mouseGlobalTX*m_cam.getViewMatrix() ;
   MVP=MV*m_cam.getProjectionMatrix();
-  shader->setShaderParamFromMat4("MVP",MVP);
+  shader->setUniform("MVP",MVP);
 
 }
 

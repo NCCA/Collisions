@@ -47,6 +47,7 @@ class  MultiBufferIndexVAO : public ngl::AbstractVAO
     /// @param _buffer index (default to 0 for single buffer VAO's)
     //----------------------------------------------------------------------------------------------------------------------
      GLuint getBufferID(unsigned int ){return m_buffer;}
+     ngl::Real *mapBuffer(unsigned int _index, GLenum _accessMode);
 
   protected :
     //----------------------------------------------------------------------------------------------------------------------

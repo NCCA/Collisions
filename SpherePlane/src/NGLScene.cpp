@@ -35,7 +35,7 @@ NGLScene::NGLScene(int _numSpheres)
 		// even random number
 		pos.set(rng->randomNumber(6),8,rng->randomNumber(6));
 		// add the spheres to the end of the particle list
-		m_sphereArray.push_back(Sphere(pos,ngl::Vec3(0,-1,0),0.2));
+    m_sphereArray.push_back(Sphere(pos,ngl::Vec3(0.0f,-1.0f,0.0f),0.2f));
 	}
 
 }
@@ -81,12 +81,12 @@ void NGLScene::initializeGL()
 
   (*shader)["nglDiffuseShader"]->use();
 
-  shader->setShaderParam4f("Colour",1.0f,1.0f,0.0f,1.0f);
-  shader->setShaderParam3f("lightPos",1.0f,1.0f,1.0f);
-  shader->setShaderParam4f("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
+  shader->setUniform("Colour",1.0f,1.0f,0.0f,1.0f);
+  shader->setUniform("lightPos",1.0f,1.0f,1.0f);
+  shader->setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
 
   (*shader)["nglColourShader"]->use();
-  shader->setShaderParam4f("Colour",1.0f,1.0f,1.0f,1.0f);
+  shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
 
 
   glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
@@ -113,10 +113,10 @@ void NGLScene::loadMatricesToShader()
   MVP=  MV*m_cam.getProjectionMatrix();
   normalMatrix=MV;
   normalMatrix.inverse();
-  shader->setShaderParamFromMat4("MV",MV);
-  shader->setShaderParamFromMat4("MVP",MVP);
-  shader->setShaderParamFromMat3("normalMatrix",normalMatrix);
-  shader->setShaderParamFromMat4("M",M);
+  shader->setUniform("MV",MV);
+  shader->setUniform("MVP",MVP);
+  shader->setUniform("normalMatrix",normalMatrix);
+  shader->setUniform("M",M);
  }
 
 void NGLScene::loadMatricesToColourShader()
@@ -128,7 +128,7 @@ void NGLScene::loadMatricesToColourShader()
 
   MV=m_mouseGlobalTX*m_cam.getViewMatrix() ;
   MVP=MV*m_cam.getProjectionMatrix();
-  shader->setShaderParamFromMat4("MVP",MVP);
+  shader->setUniform("MVP",MVP);
 
 }
 
@@ -209,7 +209,7 @@ for(Sphere &s : m_sphereArray)
   D+=s.getRadius();
   // If this is greater or equal to the BBox extent /2 then there is a collision
   //So we calculate the Spheres new direction
-  if(D <=0.0)
+  if(D <=0.0f)
   {
 
   //we on the plane now see if we hit it or not
