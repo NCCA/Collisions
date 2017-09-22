@@ -24,11 +24,11 @@ void Sphere::loadMatricesToShader(ngl::Transformation &_tx, const ngl::Mat4 &_gl
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
   ngl::Mat4 M;
-  M=_tx.getMatrix()*_globalTx;
-  MV=M*_cam->getViewMatrix() ;
-  MVP=MV*_cam->getProjectionMatrix();
+  M=_globalTx*_tx.getMatrix();
+  MV=_cam->getViewMatrix() *M;
+  MVP=_cam->getProjectionMatrix()*MV;
   normalMatrix=MV;
-  normalMatrix.inverse();
+  normalMatrix.inverse().transpose();
   shader->setUniform("MVP",MVP);
   shader->setUniform("normalMatrix",normalMatrix);
 }

@@ -53,12 +53,12 @@ void Triangle::loadMatricesToShader( ngl::Transformation &_tx,const ngl::Mat4 &_
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
   ngl::Mat4 M;
-  M=_tx.getMatrix()*_globalMat;
-  MV=  M*_cam->getViewMatrix();
-  MVP=  MV*_cam->getProjectionMatrix();
+  M=_globalMat*_tx.getMatrix();
+  MV=  _cam->getViewMatrix()*M;
+  MVP= _cam->getProjectionMatrix()*MV;
 
   normalMatrix=MV;
-  normalMatrix.inverse();
+  normalMatrix.inverse().transpose();
   shader->setUniform("MVP",MVP);
   shader->setUniform("normalMatrix",normalMatrix);
 }

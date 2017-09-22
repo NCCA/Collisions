@@ -59,10 +59,10 @@ void Plane::loadMatricesToShader(  ngl::Camera *_cam ) const
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
-   MV=m_mouseRot *  _cam->getViewMatrix() ;
-  MVP=MV*_cam->getProjectionMatrix() ;
+  MV= _cam->getViewMatrix()*m_mouseRot ;
+  MVP=_cam->getProjectionMatrix()*MV ;
   normalMatrix=MV;
-  normalMatrix.inverse();
+  normalMatrix.inverse().transpose();
   shader->setUniform("MVP",MVP);
   shader->setUniform("normalMatrix",normalMatrix);
 }
