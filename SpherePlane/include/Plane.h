@@ -2,7 +2,6 @@
 #ifndef MYPLANE_H_
 #define MYPLANE_H_
 
-#include <ngl/Camera.h>
 #include <ngl/Vec3.h>
 #include <ngl/Transformation.h>
 
@@ -16,20 +15,20 @@ public :
   Plane();
   ~Plane();
   // method to draw the plane
-  void draw(const std::string &_shaderName,  ngl::Camera *_cam, const ngl::Mat4 &_rotMat	);
+  void draw(const std::string &_shaderName,  const ngl::Mat4 &_view, const ngl::Mat4 &_project , const ngl::Mat4 &_rotMat	);
 	// Method to tilt the plane
 	void tilt( GLfloat _dt,	 bool _x, bool _z	);
 
   // method to reset the rotation values
-  inline void reset(){
+  void reset(){
                       m_xrot=0;
                       m_zrot=0;
                       tilt(0,0,0);
-                      };
-  inline ngl::Vec3 getNormal()const {return m_normal;}
-  inline ngl::Vec3 getCenter() const {return m_center;}
-  inline GLfloat getDepth() const {return m_depth;}
-  inline GLfloat getWidth() const {return m_width;}
+                      }
+  ngl::Vec3 getNormal()const {return m_normal;}
+  ngl::Vec3 getCenter() const {return m_center;}
+  GLfloat getDepth() const {return m_depth;}
+  GLfloat getWidth() const {return m_width;}
 
 private :
   // and array of vectors for the vertices
@@ -50,7 +49,7 @@ private :
   ngl::Vec3 m_normal;
   // mouse rotation
   ngl::Mat4 m_mouseRot;
-  void loadMatricesToShader(ngl::Camera *_cam ) const;
+  void loadMatricesToShader(const ngl::Mat4 &_view , const ngl::Mat4 &_project) const;
 };
 
 #endif

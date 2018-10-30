@@ -2,7 +2,6 @@
 #define SPHERE_H_
 
 
-#include <ngl/Camera.h>
 #include <ngl/ShaderLib.h>
 #include <ngl/Transformation.h>
 #include <ngl/Vec3.h>
@@ -17,8 +16,8 @@ public :
 	Sphere(const  ngl::Vec3  &_pos,  const ngl::Vec3 &_dir,		GLfloat _rad	);
 	Sphere();
   /// draw method
-  void draw(const std::string &_shaderName, const ngl::Mat4 &_globalTx, ngl::Camera *_cam   )const ;
-  void loadMatricesToShader(ngl::Transformation &_transform, const ngl::Mat4 &_globalTx,  ngl::Camera *_cam  )const;
+  void draw(const std::string &_shaderName, const ngl::Mat4 &_globalTx, const ngl::Mat4 &_view, const ngl::Mat4 &_project  )const ;
+  void loadMatricesToShader(ngl::Transformation &_transform, const ngl::Mat4 &_globalTx, const ngl::Mat4 &_view, const ngl::Mat4 &_project   )const;
 	inline void reverse(){m_dir=m_dir*-1.0;}
 	inline void setHit(){m_hit=true;}
 	inline void setNotHit(){m_hit=false;}
@@ -28,7 +27,7 @@ public :
 	inline GLfloat getRadius() const {return m_radius;}
   inline void setDirection(ngl::Vec3 _d){m_dir=_d;}
   inline ngl::Vec3 getDirection() const { return m_dir;}
-  inline void setColour(const ngl::Colour &_c)
+  inline void setColour(const ngl::Vec4 &_c)
   {m_colour=_c;}
 
 	void move();
@@ -52,7 +51,7 @@ private :
 	// the next position of the sphere
   ngl::Vec3 m_nextPos;
   /// @brief the colour of the sphere
-  ngl::Colour m_colour;
+  ngl::Vec4 m_colour;
 
 
 

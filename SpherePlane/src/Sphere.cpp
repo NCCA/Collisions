@@ -16,7 +16,7 @@ Sphere::Sphere()
   m_hit=false;
 }
 
-void Sphere::loadMatricesToShader(ngl::Transformation &_tx, const ngl::Mat4 &_globalTx, ngl::Camera *_cam ) const
+void Sphere::loadMatricesToShader(ngl::Transformation &_tx, const ngl::Mat4 &_globalTx, const ngl::Mat4 &_view, const ngl::Mat4 &_project  ) const
 {
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
 
@@ -25,8 +25,8 @@ void Sphere::loadMatricesToShader(ngl::Transformation &_tx, const ngl::Mat4 &_gl
   ngl::Mat3 normalMatrix;
   ngl::Mat4 M;
   M=_globalTx*_tx.getMatrix();
-  MV=_cam->getViewMatrix() *M;
-  MVP=_cam->getProjectionMatrix()*MV;
+  MV=_view *M;
+  MVP=_project*MV;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
   shader->setUniform("MVP",MVP);
@@ -34,7 +34,7 @@ void Sphere::loadMatricesToShader(ngl::Transformation &_tx, const ngl::Mat4 &_gl
 }
 
 
-void Sphere::draw( const std::string &_shaderName, const ngl::Mat4 &_globalTx,  ngl::Camera *_cam )const
+void Sphere::draw( const std::string &_shaderName, const ngl::Mat4 &_globalTx, const ngl::Mat4 &_view, const ngl::Mat4 &_project  )const
 {
 
   // draw wireframe if hit
@@ -55,7 +55,7 @@ void Sphere::draw( const std::string &_shaderName, const ngl::Mat4 &_globalTx,  
   ngl::Transformation t;
   t.setPosition(m_pos);
   t.setScale(m_radius,m_radius,m_radius);
-  loadMatricesToShader(t,_globalTx,_cam);
+  loadMatricesToShader(t,_globalTx,_view,_project);
   prim->draw("sphere");
 
   glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);

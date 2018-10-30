@@ -52,15 +52,15 @@ Plane::~Plane()
 // do nothing for now
 }
 
-void Plane::loadMatricesToShader(  ngl::Camera *_cam ) const
+void Plane::loadMatricesToShader(  const ngl::Mat4 &_view, const ngl::Mat4 &_project ) const
 {
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
 
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
-  MV= _cam->getViewMatrix()*m_mouseRot ;
-  MVP=_cam->getProjectionMatrix()*MV ;
+  MV= _view*m_mouseRot ;
+  MVP=_project*MV ;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
   shader->setUniform("MVP",MVP);
@@ -69,7 +69,7 @@ void Plane::loadMatricesToShader(  ngl::Camera *_cam ) const
 
 
 
-void Plane::draw(const std::string &_shaderName, ngl::Camera *_cam , const ngl::Mat4 &_rotMat)
+void Plane::draw(const std::string &_shaderName, const ngl::Mat4 &_view, const ngl::Mat4 &_project , const ngl::Mat4 &_rotMat)
 {
   m_mouseRot=_rotMat;
   // create the m_points array for drawing the quad as a tri
@@ -92,12 +92,12 @@ void Plane::draw(const std::string &_shaderName, ngl::Camera *_cam , const ngl::
   vao->setVertexAttributePointer(0,3,GL_FLOAT,sizeof(ngl::Vec3),0);
   vao->setData(MultiBufferIndexVAO::VertexData( 4*sizeof(ngl::Vec3),normals[0].m_x));
 
-  vao->setVertexAttributePointer(2,3,GL_FLOAT,sizeof(ngl::Vec3),0);
+  vao->setVertexAttributePointer(1,3,GL_FLOAT,sizeof(ngl::Vec3),0);
 
   dynamic_cast<MultiBufferIndexVAO *>(vao.get())->setIndices(sizeof(indices),&indices[0], GL_UNSIGNED_BYTE);
 
   vao->setNumIndices(6);
-  loadMatricesToShader(_cam);
+  loadMatricesToShader(_view,_project);
   vao->draw();
 
   // now draw normal
@@ -105,7 +105,7 @@ void Plane::draw(const std::string &_shaderName, ngl::Camera *_cam , const ngl::
   std::vector<ngl::Vec3> lines(2);
   lines[0]=m_center;
   lines[1]=(m_normal*4.0);
-  vao.reset( ngl::VAOFactory::createVAO("simpleVAO",GL_LINES));
+  vao=ngl::VAOFactory::createVAO("simpleVAO",GL_LINES);
   vao->bind();
   vao->setData(ngl::SimpleVAO::VertexData(2*sizeof(ngl::Vec3),lines[0].m_x));
   vao->setVertexAttributePointer(0,3,GL_FLOAT,sizeof(ngl::Vec3),0);

@@ -2,9 +2,6 @@
 #include <QGuiApplication>
 
 #include "NGLScene.h"
-#include <ngl/Camera.h>
-#include <ngl/Light.h>
-#include <ngl/Material.h>
 #include <ngl/NGLInit.h>
 #include <ngl/ShaderLib.h>
 #include <ngl/Random.h>
@@ -37,7 +34,7 @@ NGLScene::~NGLScene()
 
 void NGLScene::resizeGL( int _w, int _h )
 {
-  m_cam.setShape( 45.0f, static_cast<float>( _w ) / _h, 0.05f, 350.0f );
+  m_project=ngl::perspective( 45.0f, static_cast<float>( _w ) / _h, 0.05f, 350.0f );
   m_win.width  = static_cast<int>( _w * devicePixelRatio() );
   m_win.height = static_cast<int>( _h * devicePixelRatio() );
 }
@@ -60,10 +57,10 @@ void NGLScene::initializeGL()
   ngl::Vec3 from(0.0f,1.0f,15.0f);
   ngl::Vec3 to(0.0f,0.0f,0.0f);
   ngl::Vec3 up(0.0f,1.0f,0.0f);
-  m_cam.set(from,to,up);
+  m_view=ngl::lookAt(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam.setShape(45.0f,720.0f/576.0f,0.5f,150.0f);
+  m_project=ngl::perspective(45.0f,720.0f/576.0f,0.5f,150.0f);
   // now to load the shader and set the values
   // grab an instance of shader manager
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
@@ -106,8 +103,8 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
 
-  MVP=  m_cam.getVPMatrix()*m_mouseGlobalTX*m_transform.getMatrix();
-  normalMatrix=m_cam.getViewMatrix()*m_mouseGlobalTX*m_transform.getMatrix();
+  MVP=  m_project*m_view*m_mouseGlobalTX*m_transform.getMatrix();
+  normalMatrix=m_view*m_mouseGlobalTX*m_transform.getMatrix();
   normalMatrix.inverse().transpose();
   shader->setUniform("MVP",MVP);
   shader->setUniform("normalMatrix",normalMatrix);
@@ -119,7 +116,7 @@ void NGLScene::loadMatricesToColourShader()
   (*shader)["nglColourShader"]->use();
   ngl::Mat4 MVP;
 
-  MVP=m_cam.getVPMatrix() *m_mouseGlobalTX*m_transform.getMatrix();
+  MVP=m_project*m_view *m_mouseGlobalTX*m_transform.getMatrix();
   shader->setUniform("MVP",MVP);
 
 }
@@ -180,7 +177,7 @@ void NGLScene::paintGL()
 	{
     shader->setUniform("Colour",1.0f,1.0f,0.0f,0.0f);
 		t->rayTriangleIntersect(m_rayStart,m_rayEnd);
-		t->draw("nglDiffuseShader",m_mouseGlobalTX,&m_cam);
+    t->draw("nglDiffuseShader",m_mouseGlobalTX,m_view,m_project);
 	}
 }
 

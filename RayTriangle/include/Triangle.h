@@ -2,7 +2,6 @@
 #define TRIANGLE_H_
 
 /// @brief  simple class to hold a triangle
-#include <ngl/Camera.h>
 #include <ngl/Vec3.h>
 #include <ngl/ShaderLib.h>
 #include <ngl/Transformation.h>
@@ -15,10 +14,10 @@ public :
 	Triangle(  ngl::Vec3 _p0, ngl::Vec3 _p1, ngl::Vec3 _p2 );
 	~Triangle();
 	// method to draw the tri
-	void draw(const std::string &_shaderName, const ngl::Mat4 &_globalMat,ngl::Camera *_cam );
+  void draw(const std::string &_shaderName, const ngl::Mat4 &_globalMat,const ngl::Mat4 &_view, const ngl::Mat4 &_project);
 	// method to see if ray has intercepted with triangle.
 	void rayTriangleIntersect(ngl::Vec3 _rayStart, ngl::Vec3 _rayEnd);
-	void loadMatricesToShader(ngl::Transformation &_tx, const ngl::Mat4 &_globalMat,ngl::Camera *_cam ) const;
+  void loadMatricesToShader(ngl::Transformation &_tx, const ngl::Mat4 &_globalMat, const ngl::Mat4 &_view , const ngl::Mat4 &_project) const;
 
 private :
 	// The triangles verticies

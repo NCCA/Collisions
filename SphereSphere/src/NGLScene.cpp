@@ -2,9 +2,6 @@
 #include <QGuiApplication>
 
 #include "NGLScene.h"
-#include <ngl/Camera.h>
-#include <ngl/Light.h>
-#include <ngl/Material.h>
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
 #include <ngl/Random.h>
@@ -27,7 +24,7 @@ NGLScene::~NGLScene()
 
 void NGLScene::resizeGL( int _w, int _h )
 {
-  m_cam.setShape( 45.0f, static_cast<float>( _w ) / _h, 0.05f, 350.0f );
+  m_project=ngl::perspective( 45.0f, static_cast<float>( _w ) / _h, 0.05f, 350.0f );
   m_win.width  = static_cast<int>( _w * devicePixelRatio() );
   m_win.height = static_cast<int>( _h * devicePixelRatio() );
 }
@@ -47,10 +44,10 @@ void NGLScene::initializeGL()
   ngl::Vec3 from(0.0f,0.0f,-20.0f);
   ngl::Vec3 to(0.0f,0.0f,0.0f);
   ngl::Vec3 up(0.0f,1.0f,0.0f);
-  m_cam.set(from,to,up);
+  m_view=ngl::lookAt(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam.setShape(45,(float)720.0f/576.0f,0.5f,150.0f);
+  m_project=ngl::perspective(45,720.0f/576.0f,0.5f,150.0f);
   // now to load the shader and set the values
   // grab an instance of shader manager
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
@@ -71,21 +68,21 @@ void NGLScene::initializeGL()
   pos.set(-10.0f,0.0f,0.0f);
   dir.set(0.0f,0.0f,0.0f);
   m_sphereArray[0].set(pos,dir,2.0f);
-  m_sphereArray[0].setColour(ngl::Colour(1.0f,1.0f,0.0f));
+  m_sphereArray[0].setColour(ngl::Vec4(1.0f,1.0f,0.0f));
   pos.set(10.0f,0.0f,0.0f);
   dir.set(0.0f,0.0f,0.0f);
   m_sphereArray[1].set(pos,dir,2.0f);
-  m_sphereArray[1].setColour(ngl::Colour(1.0f,1.0f,0.0f));
+  m_sphereArray[1].setColour(ngl::Vec4(1.0f,1.0f,0.0f));
   // and two smaller ones to move and bounce.
   pos.set(-7.0f,0.0f,0.0f);
   dir.set(0.5f,0.0f,0.0f);
   m_sphereArray[2].set(pos,dir,1.0f);
-  m_sphereArray[2].setColour(ngl::Colour(1.0f,0.0f,0.0f));
+  m_sphereArray[2].setColour(ngl::Vec4(1.0f,0.0f,0.0f));
 
   pos.set(7.0f,0.0f,0.0f);
   dir.set(-0.5f,0.0f,0.0f);
   m_sphereArray[3].set(pos,dir,1.0f);
-  m_sphereArray[3].setColour(ngl::Colour(0.0f,0.0f,1.0f));
+  m_sphereArray[3].setColour(ngl::Vec4(0.0f,0.0f,1.0f));
   m_sphereUpdateTimer=startTimer(20);
 
 }
@@ -115,7 +112,7 @@ void NGLScene::paintGL()
 
 	for(Sphere s : m_sphereArray)
 	{
-		s.draw("nglDiffuseShader", m_mouseGlobalTX, &m_cam);
+    s.draw("nglDiffuseShader", m_mouseGlobalTX,m_view,m_project);
 	}
 }
 

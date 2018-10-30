@@ -2,7 +2,6 @@
 #define SPHERE_H_
 
 
-#include <ngl/Camera.h>
 #include <ngl/ShaderLib.h>
 #include <ngl/Transformation.h>
 #include <ngl/Vec3.h>
@@ -17,8 +16,8 @@ public :
 	Sphere(ngl::Vec3 _pos,  ngl::Vec3 _dir,	GLfloat _rad	);
 	Sphere();
   /// draw method
-  void draw(const std::string &_shaderName,const ngl::Mat4 &_globalMat, ngl::Camera *_cam )const ;
-  void loadMatricesToShader(ngl::Transformation &_tx, const ngl::Mat4 &_globalMat,ngl::Camera *_cam )const;
+  void draw(const std::string &_shaderName,const ngl::Mat4 &_globalMat, const  ngl::Mat4 &_view, const ngl::Mat4 &_project)const ;
+  void loadMatricesToShader(ngl::Transformation &_tx, const ngl::Mat4 &_globalMat, const ngl::Mat4 &_view , const ngl::Mat4 &_project)const;
 	inline void reverse(){m_dir=m_dir*-1.0;}
 	inline void setHit(){m_hit=true;}
 	inline void setNotHit(){m_hit=false;}

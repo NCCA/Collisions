@@ -31,12 +31,12 @@ Triangle::Triangle(ngl::Vec3 _p0, ngl::Vec3 _p1,  ngl::Vec3 _p2)
   m_normals.push_back(normal);
   // first we draw the triangle
   // we build up a vertex array for the lines of the start and end points and draw
-  m_vao.reset( ngl::VAOFactory::createVAO("multiBufferVAO",GL_TRIANGLES));
+  m_vao= ngl::VAOFactory::createVAO("multiBufferVAO",GL_TRIANGLES);
   m_vao->bind();
   m_vao->setData(ngl::MultiBufferVAO::VertexData(3*sizeof(ngl::Vec3),m_points[0].m_x));
   m_vao->setVertexAttributePointer(0,3,GL_FLOAT,sizeof(ngl::Vec3),0);
   m_vao->setData(ngl::MultiBufferVAO::VertexData(3*sizeof(ngl::Vec3),m_normals[0].m_x));
-  m_vao->setVertexAttributePointer(2,3,GL_FLOAT,sizeof(ngl::Vec3),0);
+  m_vao->setVertexAttributePointer(1,3,GL_FLOAT,sizeof(ngl::Vec3),0);
   m_vao->setNumIndices(3);
   m_vao->unbind();
 }
@@ -45,7 +45,7 @@ Triangle::~Triangle()
 {
 }
 
-void Triangle::loadMatricesToShader( ngl::Transformation &_tx,const ngl::Mat4 &_globalMat, ngl::Camera *_cam ) const
+void Triangle::loadMatricesToShader( ngl::Transformation &_tx,const ngl::Mat4 &_globalMat, const ngl::Mat4 &_view , const ngl::Mat4 &_project) const
 {
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
 
@@ -54,8 +54,8 @@ void Triangle::loadMatricesToShader( ngl::Transformation &_tx,const ngl::Mat4 &_
   ngl::Mat3 normalMatrix;
   ngl::Mat4 M;
   M=_globalMat*_tx.getMatrix();
-  MV=  _cam->getViewMatrix()*M;
-  MVP= _cam->getProjectionMatrix()*MV;
+  MV=  _view*M;
+  MVP= _project*MV;
 
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
@@ -65,7 +65,7 @@ void Triangle::loadMatricesToShader( ngl::Transformation &_tx,const ngl::Mat4 &_
 
 
 
-void Triangle::draw( const std::string &_shaderName, const ngl::Mat4 &_globalMat, ngl::Camera *_cam )
+void Triangle::draw(const std::string &_shaderName, const ngl::Mat4 &_globalMat, const ngl::Mat4 &_view , const ngl::Mat4 &_project)
 {
 
 	// draw wireframe if hit
@@ -85,7 +85,7 @@ void Triangle::draw( const std::string &_shaderName, const ngl::Mat4 &_globalMat
   ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   ngl::Transformation t;
 
-	loadMatricesToShader(t,_globalMat,_cam);
+  loadMatricesToShader(t,_globalMat,_view,_project);
 	m_vao->bind();
 	m_vao->draw();
 	m_vao->unbind();
@@ -95,7 +95,7 @@ void Triangle::draw( const std::string &_shaderName, const ngl::Mat4 &_globalMat
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	t.setPosition(m_v0);
   t.setScale(0.06f,0.06f,0.06f);
-  loadMatricesToShader(t,_globalMat,_cam);
+  loadMatricesToShader(t,_globalMat,_view,_project);
     prim->draw("cube");
 
    // draw the hit point
@@ -103,7 +103,7 @@ void Triangle::draw( const std::string &_shaderName, const ngl::Mat4 &_globalMat
    {
       t.setPosition(m_hitPoint);
       t.setScale(2.0,2.0,2.0);
-      loadMatricesToShader(t,_globalMat,_cam);
+      loadMatricesToShader(t,_globalMat,_view,_project);
       prim->draw("smallSphere");
    }
 

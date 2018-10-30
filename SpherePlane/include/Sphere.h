@@ -2,7 +2,6 @@
 #define SPHERE_H_
 
 
-#include <ngl/Camera.h>
 #include <ngl/ShaderLib.h>
 #include <ngl/Transformation.h>
 #include <ngl/Vec3.h>
@@ -17,17 +16,16 @@ public :
 	Sphere(const  ngl::Vec3  &_pos,  const ngl::Vec3 &_dir,		GLfloat _rad	);
 	Sphere();
   /// draw method
-  void draw(const std::string &_shaderName, const ngl::Mat4 &_globalTx, ngl::Camera *_cam   )const ;
-  void loadMatricesToShader(ngl::Transformation &_tx, const ngl::Mat4 &_globalTx, ngl::Camera *_cam )const;
-	inline void reverse(){m_dir=m_dir*-1.0;}
-	inline void setHit(){m_hit=true;}
-	inline void setNotHit(){m_hit=false;}
-	inline bool isHit()const {return m_hit;}
-  inline ngl::Vec3 getPos() const {return m_pos;}
-  inline ngl::Vec3 getNextPos() const {return m_nextPos;}
-	inline GLfloat getRadius() const {return m_radius;}
-  inline void setDirection(ngl::Vec3 _d){m_dir=_d;}
-  inline ngl::Vec3 getDirection() const { return m_dir;}
+  void draw(const std::string &_shaderName, const ngl::Mat4 &_globalTx, const ngl::Mat4 &_view, const ngl::Mat4 &_project   )const ;
+  void loadMatricesToShader(ngl::Transformation &_tx, const ngl::Mat4 &_globalTx, const ngl::Mat4 &_view, const ngl::Mat4 &_project ) const;
+  void setHit(){m_hit=true;}
+  void setNotHit(){m_hit=false;}
+  bool isHit()const {return m_hit;}
+  ngl::Vec3 getPos() const {return m_pos;}
+  ngl::Vec3 getNextPos() const {return m_nextPos;}
+  GLfloat getRadius() const {return m_radius;}
+  void setDirection(ngl::Vec3 _d){m_dir=_d;}
+  ngl::Vec3 getDirection() const { return m_dir;}
 	void move();
 	/// set the sphere values
 	/// @param[in] _pos the position to set
