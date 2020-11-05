@@ -1,7 +1,6 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.12)
 # Name of the project
-set(PROJECT_NAME TextureDemos)
-project(${PROJECT_NAME})
+project(TextureDemosBuildAll)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/BoundingBox/ )
 add_subdirectory(${PROJECT_SOURCE_DIR}/RaySphere/ )
