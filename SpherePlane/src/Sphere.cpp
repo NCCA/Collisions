@@ -18,8 +18,6 @@ Sphere::Sphere()
 
 void Sphere::loadMatricesToShader(ngl::Transformation &_tx, const ngl::Mat4 &_globalTx, const ngl::Mat4 &_view, const ngl::Mat4 &_project  ) const
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
@@ -29,8 +27,8 @@ void Sphere::loadMatricesToShader(ngl::Transformation &_tx, const ngl::Mat4 &_gl
   MVP=_project*MV;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
-  shader->setUniform("MVP",MVP);
-  shader->setUniform("normalMatrix",normalMatrix);
+  ngl::ShaderLib::setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("normalMatrix",normalMatrix);
 }
 
 
@@ -48,22 +46,19 @@ void Sphere::draw( const std::string &_shaderName, const ngl::Mat4 &_globalTx, c
   }
 
 
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  shader->use(_shaderName);
-  // grab an instance of the primitives for drawing
-  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
+  ngl::ShaderLib::use(_shaderName);
   ngl::Transformation t;
   t.setPosition(m_pos);
   t.setScale(m_radius,m_radius,m_radius);
   loadMatricesToShader(t,_globalTx,_view,_project);
-  prim->draw("sphere");
+  ngl::VAOPrimitives::draw("sphere");
 
   glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 }
 
 
 
-void Sphere :: set(const ngl::Vec3 &_pos,   const ngl::Vec3 &_dir,  GLfloat _rad )
+void Sphere::set(const ngl::Vec3 &_pos,   const ngl::Vec3 &_dir,  GLfloat _rad )
 {
   m_pos=_pos;
   m_dir=_dir;

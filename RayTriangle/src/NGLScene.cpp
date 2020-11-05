@@ -23,13 +23,6 @@ NGLScene::NGLScene(int _numTriangles)
 NGLScene::~NGLScene()
 {
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
-//  // delete the triangles to clear the VAO's
-// smart pointer does this for us!
-//  for(auto *t : m_triangleArray)
-//  {
-//    delete t;
-//  }
-
 }
 
 void NGLScene::resizeGL( int _w, int _h )
@@ -44,7 +37,7 @@ void NGLScene::initializeGL()
 {
   // we must call this first before any other GL commands to load and link the
   // gl commands from the lib, if this is not done program will crash
-  ngl::NGLInit::instance();
+  ngl::NGLInit::initialize();
 
   glClearColor(0.4f, 0.4f, 0.4f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
@@ -62,32 +55,28 @@ void NGLScene::initializeGL()
   // The final two are near and far clipping planes of 0.5 and 10
   m_project=ngl::perspective(45.0f,720.0f/576.0f,0.5f,150.0f);
   // now to load the shader and set the values
-  // grab an instance of shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["nglDiffuseShader"]->use();
+  
+  ngl::ShaderLib::use("nglDiffuseShader");
 
-  shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
-  shader->setUniform("lightPos",1.0f,1.0f,1.0f);
-  shader->setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("lightPos",1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
 
-  (*shader)["nglColourShader"]->use();
-  shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::use("nglColourShader");
+  ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
 
   glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
 
-  ngl::VAOPrimitives *prim =  ngl::VAOPrimitives::instance();
 
-  prim->createSphere("smallSphere",0.05f,10.0f);
+  ngl::VAOPrimitives::createSphere("smallSphere",0.05f,10.0f);
 
-  // create our triangles, as we create a VAO we need a valid gl context
-  ngl::Random *rng=ngl::Random::instance();
 
   for (int i=0; i<m_numTriangles; ++i)
   {
-   ngl::Vec3 c(rng->randomNumber(10),rng->randomNumber(10),-rng->randomPositiveNumber(10));
-   ngl::Vec3 v0(rng->randomNumber(2)+0.1f,rng->randomNumber(2)+0.1f,-rng->randomPositiveNumber(2)+0.1f);
-   ngl::Vec3 v1(rng->randomNumber(2)+0.1f,rng->randomNumber(2)+0.1f,-rng->randomPositiveNumber(2)+0.1f);
-   ngl::Vec3 v2(rng->randomNumber(2)+0.1f,rng->randomNumber(2)+0.1f,-rng->randomPositiveNumber(2)+0.1f);
+   ngl::Vec3 c=ngl::Random::getRandomVec3()*10.0f; 
+   ngl::Vec3 v0(ngl::Random::randomNumber(2)+0.1f,ngl::Random::randomNumber(2)+0.1f,-ngl::Random::randomPositiveNumber(2)+0.1f);
+   ngl::Vec3 v1(ngl::Random::randomNumber(2)+0.1f,ngl::Random::randomNumber(2)+0.1f,-ngl::Random::randomPositiveNumber(2)+0.1f);
+   ngl::Vec3 v2(ngl::Random::randomNumber(2)+0.1f,ngl::Random::randomNumber(2)+0.1f,-ngl::Random::randomPositiveNumber(2)+0.1f);
    m_triangleArray.emplace_back(new Triangle(c+v0,c+v1,c+v2));
   }
   // as re-size is not explicitly called we need to do this.
@@ -97,8 +86,7 @@ void NGLScene::initializeGL()
 
 void NGLScene::loadMatricesToShader()
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["nglDiffuseShader"]->use();
+  ngl::ShaderLib::use("nglDiffuseShader");
 
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
@@ -106,18 +94,16 @@ void NGLScene::loadMatricesToShader()
   MVP=  m_project*m_view*m_mouseGlobalTX*m_transform.getMatrix();
   normalMatrix=m_view*m_mouseGlobalTX*m_transform.getMatrix();
   normalMatrix.inverse().transpose();
-  shader->setUniform("MVP",MVP);
-  shader->setUniform("normalMatrix",normalMatrix);
+  ngl::ShaderLib::setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("normalMatrix",normalMatrix);
 }
 
 void NGLScene::loadMatricesToColourShader()
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["nglColourShader"]->use();
+  ngl::ShaderLib::use("nglColourShader");
   ngl::Mat4 MVP;
-
   MVP=m_project*m_view *m_mouseGlobalTX*m_transform.getMatrix();
-  shader->setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("MVP",MVP);
 
 }
 
@@ -139,21 +125,18 @@ void NGLScene::paintGL()
   m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;
   m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
 
-  // grab an instance of the primitives for drawing
-  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   // Rotation based on the mouse position for our global
   // transform
   // grab an instance of the shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  shader->use("nglDiffuseShader");
+  ngl::ShaderLib::use("nglDiffuseShader");
 
 	// draw a cube at the ray start points
 	m_transform.reset();
 	{
-    shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
+    ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
 		m_transform.setPosition(m_rayStart);
 		loadMatricesToShader();
-		prim->draw("cube");
+		ngl::VAOPrimitives::draw("cube");
 	}
 
 	// we build up a vertex array for the lines of the start and end points and draw
@@ -172,10 +155,10 @@ void NGLScene::paintGL()
     vao->removeVAO();
 	}
 	// draw all the triangles
-	shader->use("nglDiffuseShader");
+	ngl::ShaderLib::use("nglDiffuseShader");
   for(auto &t : m_triangleArray)
 	{
-    shader->setUniform("Colour",1.0f,1.0f,0.0f,0.0f);
+    ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,0.0f,0.0f);
 		t->rayTriangleIntersect(m_rayStart,m_rayEnd);
     t->draw("nglDiffuseShader",m_mouseGlobalTX,m_view,m_project);
 	}

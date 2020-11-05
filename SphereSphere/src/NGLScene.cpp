@@ -34,7 +34,7 @@ void NGLScene::initializeGL()
 {
   // we must call this first before any other GL commands to load and link the
   // gl commands from the lib, if this is not done program will crash
-  ngl::NGLInit::instance();
+  ngl::NGLInit::initialize();
 
   glClearColor(1.4f, 1.4f, 1.4f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
@@ -50,17 +50,15 @@ void NGLScene::initializeGL()
   m_project=ngl::perspective(45,720.0f/576.0f,0.5f,150.0f);
   // now to load the shader and set the values
   // grab an instance of shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["nglDiffuseShader"]->use();
+  ngl::ShaderLib::use("nglDiffuseShader");
 
-  shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
-  shader->setUniform("lightPos",1.0f,1.0f,1.0f);
-  shader->setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("lightPos",1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
 
   glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
 
-  ngl::VAOPrimitives *prim =  ngl::VAOPrimitives::instance();
-  prim->createSphere("sphere",1.0f,40.0f);
+  ngl::VAOPrimitives::createSphere("sphere",1.0f,40.0f);
   // create vectors for the position and direction
   ngl::Vec3 pos;
   ngl::Vec3 dir;

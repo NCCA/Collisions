@@ -7,7 +7,7 @@
 #include <ngl/ShaderLib.h>
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
-
+#include <algorithm>
 
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief extents of the bbox
@@ -27,17 +27,14 @@ NGLScene::NGLScene(int _numSpheres)
 
 void NGLScene::resetSpheres()
 {
-	m_sphereArray.clear();
-	ngl::Vec3 dir;
-	ngl::Random *rng=ngl::Random::instance();
-	// loop and create the initial particle list
-	for(int i=0; i<m_numSpheres; ++i)
-	{
-		dir=rng->getRandomVec3();
-		// add the spheres to the end of the particle list
-    m_sphereArray.push_back(Sphere(rng->getRandomPoint(s_extents,s_extents,s_extents),dir,rng->randomPositiveNumber(2)+0.5f));
-	}
+	m_sphereArray.resize(m_numSpheres);
 
+  std::generate(std::begin(m_sphereArray),std::end(m_sphereArray),[this]()
+  { 
+    return Sphere(ngl::Random::getRandomPoint(s_extents,s_extents,s_extents),
+                  ngl::Random::getRandomVec3(),
+                  ngl::Random::randomPositiveNumber(2)+0.5f);
+  });
 }
 NGLScene::~NGLScene()
 {
@@ -55,7 +52,7 @@ void NGLScene::initializeGL()
 {
   // we must call this first before any other GL commands to load and link the
   // gl commands from the lib, if this is not done program will crash
-  ngl::NGLInit::instance();
+  ngl::NGLInit::initialize();
 
   glClearColor(0.4f, 0.4f, 0.4f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
@@ -73,36 +70,29 @@ void NGLScene::initializeGL()
   // The final two are near and far clipping planes of 0.5 and 10
   m_project=ngl::perspective(45.0f,720.0f/576.0f,0.5f,150.0f);
   // now to load the shader and set the values
-  // grab an instance of shader manager
-   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-   (*shader)["nglDiffuseShader"]->use();
+  
+   ngl::ShaderLib::use("nglDiffuseShader");
 
-   shader->setUniform("Colour",1.0f,1.0f,0.0f,1.0f);
-   shader->setUniform("lightPos",1.0f,1.0f,1.0f);
-   shader->setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
+   ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,0.0f,1.0f);
+   ngl::ShaderLib::setUniform("lightPos",1.0f,1.0f,1.0f);
+   ngl::ShaderLib::setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
 
-   (*shader)["nglColourShader"]->use();
-   shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
+   ngl::ShaderLib::use("nglColourShader");
+   ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
 
   glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
 
-  ngl::VAOPrimitives *prim =  ngl::VAOPrimitives::instance();
-  prim->createSphere("sphere",1.0f,40.0f);
+  ngl::VAOPrimitives::createSphere("sphere",1.0f,40.0f);
  // create our Bounding Box, needs to be done once we have a gl context as we create VAO for drawing
-  m_bbox.reset( new ngl::BBox(ngl::Vec3(),80.0f,80.0f,80.0f));
-
+  m_bbox=std::make_unique<ngl::BBox>(ngl::Vec3(0.0f,0.0f,0.0f),80.0f,80.0f,80.0f);
   m_bbox->setDrawMode(GL_LINE);
-
   m_sphereUpdateTimer=startTimer(40);
-
 }
 
 
 void NGLScene::loadMatricesToShader()
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["nglDiffuseShader"]->use();
-
+  ngl::ShaderLib::use("nglDiffuseShader");
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
@@ -110,17 +100,16 @@ void NGLScene::loadMatricesToShader()
   MVP=m_project *MV;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
-  shader->setUniform("MVP",MVP);
-  shader->setUniform("normalMatrix",normalMatrix);
+  ngl::ShaderLib::setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("normalMatrix",normalMatrix);
 }
 
 void NGLScene::loadMatricesToColourShader()
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["nglColourShader"]->use();
+  ngl::ShaderLib::use("nglColourShader");
   ngl::Mat4 MVP;
   MVP=m_project*m_view * m_mouseGlobalTX;
-  shader->setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("MVP",MVP);
 
 }
 
@@ -144,13 +133,11 @@ void NGLScene::paintGL()
    m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;
    m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
 
-  // grab an instance of the shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["nglColourShader"]->use();
+  ngl::ShaderLib::use("nglColourShader");
   loadMatricesToColourShader();
   m_bbox->draw();
 
-  shader->use("nglDiffuseShader");
+  ngl::ShaderLib::use("nglDiffuseShader");
 
 	for(Sphere s : m_sphereArray)
 	{
@@ -265,7 +252,7 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_F : showFullScreen(); break;
   // show windowed
   case Qt::Key_N : showNormal(); break;
-  case  Qt::Key_Space : m_animate^=true; break;
+  case Qt::Key_Space : m_animate^=true; break;
   case Qt::Key_S : m_checkSphereSphere^=true; break;
   case Qt::Key_R : resetSpheres(); break;
   case Qt::Key_Minus : removeSphere(); break;
@@ -414,11 +401,9 @@ void NGLScene::removeSphere()
 
 void NGLScene::addSphere()
 {
-  ngl::Random *rng=ngl::Random::instance();
-  ngl::Vec3 dir;
-  dir=rng->getRandomVec3();
+  
   // add the spheres to the end of the particle list
-  m_sphereArray.push_back(Sphere(rng->getRandomPoint(s_extents,s_extents,s_extents),dir,rng->randomPositiveNumber(2)+0.5));
+  m_sphereArray.push_back(Sphere(ngl::Random::getRandomPoint(s_extents,s_extents,s_extents),ngl::Random::getRandomVec3(),ngl::Random::randomPositiveNumber(2)+0.5));
   ++m_numSpheres;
 }
 

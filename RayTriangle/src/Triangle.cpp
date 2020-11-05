@@ -47,7 +47,6 @@ Triangle::~Triangle()
 
 void Triangle::loadMatricesToShader( ngl::Transformation &_tx,const ngl::Mat4 &_globalMat, const ngl::Mat4 &_view , const ngl::Mat4 &_project) const
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
 
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
@@ -59,8 +58,8 @@ void Triangle::loadMatricesToShader( ngl::Transformation &_tx,const ngl::Mat4 &_
 
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
-  shader->setUniform("MVP",MVP);
-  shader->setUniform("normalMatrix",normalMatrix);
+  ngl::ShaderLib::setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("normalMatrix",normalMatrix);
 }
 
 
@@ -79,10 +78,8 @@ void Triangle::draw(const std::string &_shaderName, const ngl::Mat4 &_globalMat,
 	}
 
 
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)[_shaderName]->use();
+  ngl::ShaderLib::use(_shaderName);
   // grab an instance of the primitives for drawing
-  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   ngl::Transformation t;
 
   loadMatricesToShader(t,_globalMat,_view,_project);
@@ -96,7 +93,7 @@ void Triangle::draw(const std::string &_shaderName, const ngl::Mat4 &_globalMat,
 	t.setPosition(m_v0);
   t.setScale(0.06f,0.06f,0.06f);
   loadMatricesToShader(t,_globalMat,_view,_project);
-    prim->draw("cube");
+  ngl::VAOPrimitives::draw("cube");
 
    // draw the hit point
    if(m_hit)
@@ -104,7 +101,7 @@ void Triangle::draw(const std::string &_shaderName, const ngl::Mat4 &_globalMat,
       t.setPosition(m_hitPoint);
       t.setScale(2.0,2.0,2.0);
       loadMatricesToShader(t,_globalMat,_view,_project);
-      prim->draw("smallSphere");
+      ngl::VAOPrimitives::draw("smallSphere");
    }
 
 }

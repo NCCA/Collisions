@@ -8,7 +8,7 @@
 #include <ngl/ShaderLib.h>
 #include <ngl/VAOFactory.h>
 #include "MultiBufferIndexVAO.h"
-
+#include <algorithm>
 
 
 NGLScene::NGLScene(int _numSpheres)
@@ -24,17 +24,14 @@ NGLScene::NGLScene(int _numSpheres)
   m_plane = new Plane(ngl::Vec3(0,0,0),5,5);
   ngl::Vec3 pos;
   // now create the actual spheres for our program
-  ngl::Random *rng=ngl::Random::instance();
 
-	for(int i=0; i<_numSpheres; i++)
-	{
-		// use the uniform function from the rng class to get a nice
-		// even random number
-		pos.set(rng->randomNumber(6),8,rng->randomNumber(6));
-		// add the spheres to the end of the particle list
-    m_sphereArray.push_back(Sphere(pos,ngl::Vec3(0.0f,-1.0f,0.0f),0.2f));
-	}
 
+  m_sphereArray.resize(_numSpheres);
+  std::generate(std::begin(m_sphereArray),std::end(m_sphereArray),[this](){
+    return Sphere(ngl::Vec3(ngl::Random::randomNumber(6),8,
+                  ngl::Random::randomNumber(6)),
+                  ngl::Vec3(0.0f,-1.0f,0.0f),0.2f);
+  });
 }
 
 
@@ -55,7 +52,7 @@ void NGLScene::initializeGL()
 {
   // we must call this first before any other GL commands to load and link the
   // gl commands from the lib, if this is not done program will crash
-  ngl::NGLInit::instance();
+  ngl::NGLInit::initialize();
 
   glClearColor(0.4f, 0.4f, 0.4f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
@@ -72,34 +69,27 @@ void NGLScene::initializeGL()
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
   m_project=ngl::perspective(45.0f,720.0f/576.0f,0.05f,350.0f);
-  // now to load the shader and set the values
-  // grab an instance of shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
 
-  (*shader)["nglDiffuseShader"]->use();
+  ngl::ShaderLib::use("nglDiffuseShader");
 
-  shader->setUniform("Colour",1.0f,1.0f,0.0f,1.0f);
-  shader->setUniform("lightPos",1.0f,1.0f,1.0f);
-  shader->setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,0.0f,1.0f);
+  ngl::ShaderLib::setUniform("lightPos",1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
 
-  (*shader)["nglColourShader"]->use();
-  shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::use("nglColourShader");
+  ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
 
 
   glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
-
-  ngl::VAOPrimitives *prim =  ngl::VAOPrimitives::instance();
-  prim->createSphere("sphere",1.0f,40.0f);
+  ngl::VAOPrimitives::createSphere("sphere",1.0f,40.0f);
   ngl::VAOFactory::registerVAOCreator("multiBufferIndexVAO", MultiBufferIndexVAO::create);
   ngl::VAOFactory::listCreators();
-
 }
 
 
 void NGLScene::loadMatricesToShader()
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["nglDiffuseShader"]->use();
+  ngl::ShaderLib::use("nglDiffuseShader");
 
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
@@ -110,20 +100,18 @@ void NGLScene::loadMatricesToShader()
   MVP=m_project*MV;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
-  shader->setUniform("MV",MV);
-  shader->setUniform("MVP",MVP);
-  shader->setUniform("normalMatrix",normalMatrix);
-  shader->setUniform("M",M);
+  ngl::ShaderLib::setUniform("MV",MV);
+  ngl::ShaderLib::setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("normalMatrix",normalMatrix);
+  ngl::ShaderLib::setUniform("M",M);
  }
 
 void NGLScene::loadMatricesToColourShader()
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["nglColourShader"]->use();
+  ngl::ShaderLib::use("nglColourShader");
   ngl::Mat4 MVP;
-
   MVP=m_project*m_view*m_mouseGlobalTX;
-  shader->setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("MVP",MVP);
 }
 
 void NGLScene::paintGL()
@@ -168,8 +156,7 @@ void NGLScene::updateScene()
 		ngl::Vec3 pos;
 		for(Sphere &s :m_sphereArray)
 		{
-			ngl::Random *rng=ngl::Random::instance();
-			pos.set(rng->randomNumber(6.0f),8.0f,rng->randomNumber(6.0f));
+			pos.set(ngl::Random::randomNumber(6.0f),8.0f,ngl::Random::randomNumber(6.0f));
 			s.set(pos,ngl::Vec3(0.0f,-1.0f,0.0f),0.2f);
 		}
 

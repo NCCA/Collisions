@@ -54,8 +54,6 @@ Plane::~Plane()
 
 void Plane::loadMatricesToShader(  const ngl::Mat4 &_view, const ngl::Mat4 &_project ) const
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
@@ -63,8 +61,8 @@ void Plane::loadMatricesToShader(  const ngl::Mat4 &_view, const ngl::Mat4 &_pro
   MVP=_project*MV ;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
-  shader->setUniform("MVP",MVP);
-  shader->setUniform("normalMatrix",normalMatrix);
+  ngl::ShaderLib::setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("normalMatrix",normalMatrix);
 }
 
 
@@ -82,9 +80,8 @@ void Plane::draw(const std::string &_shaderName, const ngl::Mat4 &_view, const n
 		normals[i]=normal;
 	}
 	GLubyte indices[]={0,1,3,3,2,1};
-	ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-	(*shader)[_shaderName]->use();
-  shader->setUniform("Colour",1.0f,1.0f,0.0f,0.0f);
+	ngl::ShaderLib::use(_shaderName);
+  ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,0.0f,0.0f);
   std::unique_ptr<ngl::AbstractVAO> vao(ngl::VAOFactory::createVAO("multiBufferIndexVAO",GL_TRIANGLES));
 
   vao->bind();

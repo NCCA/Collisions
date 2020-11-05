@@ -15,6 +15,7 @@ public :
 	/// @param rad the radius of the sphere */
 	Sphere(ngl::Vec3 _pos,  ngl::Vec3 _dir,	GLfloat _rad	);
 	Sphere();
+	~Sphere()=default;
   /// draw method
   void draw(const std::string &_shaderName,const ngl::Mat4 &_globalMat, const  ngl::Mat4 &_view, const ngl::Mat4 &_project)const ;
   void loadMatricesToShader(ngl::Transformation &_tx, const ngl::Mat4 &_globalMat, const ngl::Mat4 &_view , const ngl::Mat4 &_project)const;

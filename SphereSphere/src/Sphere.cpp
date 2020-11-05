@@ -18,8 +18,6 @@ Sphere::Sphere()
 
 void Sphere::loadMatricesToShader( ngl::Transformation &_transform,const ngl::Mat4 &_globalTx, const ngl::Mat4 &_view, const ngl::Mat4 &_project ) const
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
@@ -29,9 +27,9 @@ void Sphere::loadMatricesToShader( ngl::Transformation &_transform,const ngl::Ma
   MVP=_project*MV;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
-  shader->setUniform("MVP",MVP);
-  shader->setUniform("normalMatrix",normalMatrix);
-  shader->setUniform("Colour",m_colour);
+  ngl::ShaderLib::setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("normalMatrix",normalMatrix);
+  ngl::ShaderLib::setUniform("Colour",m_colour);
 
 }
 
@@ -50,10 +48,8 @@ void Sphere::draw( const std::string &_shaderName, const ngl::Mat4 &_globalTx, c
   }
 
 
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  shader->use(_shaderName);
+  ngl::ShaderLib::use(_shaderName);
   // grab an instance of the primitives for drawing
-  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   ngl::Transformation transform;
   transform.reset();
   {
@@ -61,7 +57,7 @@ void Sphere::draw( const std::string &_shaderName, const ngl::Mat4 &_globalTx, c
     transform.setPosition(m_pos);
     transform.setScale(m_radius,m_radius,m_radius);
     loadMatricesToShader(transform,_globalTx,_view,_project);
-    prim->draw("sphere");
+    ngl::VAOPrimitives::draw("sphere");
   }
 glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 }

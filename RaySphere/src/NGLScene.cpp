@@ -15,16 +15,15 @@ NGLScene::NGLScene(int _numSpheres)
   m_rayUpdateTimer=startTimer(50);
   m_animate=true;
   // now create the actual spheres for our program
-  ngl::Random *rng=ngl::Random::instance();
   float x;
   float y;
 
 	for (int i=0; i<m_numSpheres; ++i)
 	{
-		x=rng->randomNumber(10);
-		y=rng->randomNumber(8);
+		x=ngl::Random::randomNumber(10);
+		y=ngl::Random::randomNumber(8);
 
-		m_sphereArray.push_back(Sphere(ngl::Vec3(x,y,0),rng->randomPositiveNumber(1)+0.2));
+		m_sphereArray.push_back(Sphere(ngl::Vec3(x,y,0),ngl::Random::randomPositiveNumber(1)+0.2));
 	}
 
 	// create the points for our ray
@@ -53,7 +52,7 @@ void NGLScene::initializeGL()
 {
   // we must call this first before any other GL commands to load and link the
   // gl commands from the lib, if this is not done program will crash
-  ngl::NGLInit::instance();
+  ngl::NGLInit::initialize();
 
   glClearColor(0.4f, 0.4f, 0.4f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
@@ -70,23 +69,19 @@ void NGLScene::initializeGL()
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
   m_project=ngl::perspective(45.0f,(float)720.0f/576.0f,0.5f,150.0f);
-  // now to load the shader and set the values
-  // grab an instance of shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["nglDiffuseShader"]->use();
+  ngl::ShaderLib::use("nglDiffuseShader");
 
-  shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
-  shader->setUniform("lightPos",1.0f,1.0f,1.0f);
-  shader->setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("lightPos",1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
 
-  (*shader)["nglColourShader"]->use();
-  shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::use("nglColourShader");
+  ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
 
   glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
 
-  ngl::VAOPrimitives *prim =  ngl::VAOPrimitives::instance();
-  prim->createSphere("sphere",1.0,40);
-  prim->createSphere("smallSphere",0.2,10);
+  ngl::VAOPrimitives::createSphere("sphere",1.0,40);
+  ngl::VAOPrimitives::createSphere("smallSphere",0.2,10);
 
 
   // as re-size is not explicitly called we need to do this.
@@ -96,8 +91,7 @@ void NGLScene::initializeGL()
 
 void NGLScene::loadMatricesToShader()
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["nglDiffuseShader"]->use();
+  ngl::ShaderLib::use("nglDiffuseShader");
 
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
@@ -108,19 +102,16 @@ void NGLScene::loadMatricesToShader()
   MVP=m_project*MV;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
-  shader->setUniform("MVP",MVP);
-  shader->setUniform("normalMatrix",normalMatrix);
+  ngl::ShaderLib::setUniform("MVP",MVP);
+  ngl::ShaderLib::setUniform("normalMatrix",normalMatrix);
 }
 
 void NGLScene::loadMatricesToColourShader()
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-   (*shader)["nglColourShader"]->use();
+   ngl::ShaderLib::use("nglColourShader");
    ngl::Mat4 MVP;
-
    MVP=m_project*m_view*m_mouseGlobalTX*m_transform.getMatrix();
-   shader->setUniform("MVP",MVP);
-
+   ngl::ShaderLib::setUniform("MVP",MVP);
 }
 
 
@@ -142,34 +133,28 @@ void NGLScene::paintGL()
    m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;
    m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
 
-  // grab an instance of the primitives for drawing
-  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
-  // Rotation based on the mouse position for our global
-  // transform
-  // grab an instance of the shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  shader->use("nglDiffuseShader");
+  ngl::ShaderLib::use("nglDiffuseShader");
   // draw a cube at the ray start points
   m_transform.reset();
   {
-    shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
+    ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
     m_transform.setPosition(m_rayStart);
     loadMatricesToShader();
-    prim->draw("cube");
+    ngl::VAOPrimitives::draw("cube");
   }
 
 	m_transform.reset();
 	{
 		m_transform.setPosition(m_rayStart2);
 		loadMatricesToShader();
-		prim->draw("cube");
+		ngl::VAOPrimitives::draw("cube");
 	}
 
 
 
 	for(Sphere s : m_sphereArray)
 	{
-    shader->setUniform("Colour",1.0f,1.0f,0.0f,1.0f);
+    ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,0.0f,1.0f);
 
     s.draw("nglDiffuseShader",m_mouseGlobalTX,m_view,m_project);
 		if(s.isHit())
@@ -183,8 +168,8 @@ void NGLScene::paintGL()
 	// we build up a VAO for the lines of the start and end points and draw
 	m_transform.reset();
 	{
-		shader->use("nglColourShader");
-    shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
+		ngl::ShaderLib::use("nglColourShader");
+    ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
     std::unique_ptr<ngl::AbstractVAO> vao( ngl::VAOFactory::createVAO("simpleVAO",GL_LINES));
 
     vao->bind();
@@ -238,23 +223,21 @@ if(discrim >= 0.0)
 	h1=_raystart + (_raydir*t1);
 	h2=_raystart + (_raydir*t2);
 	// draw the hit points
-	ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
-	ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  shader->setUniform("Colour",1.0f,0.0f,0.0f,0.0f);
+	ngl::ShaderLib::setUniform("Colour",1.0f,0.0f,0.0f,0.0f);
 	m_transform.reset();
 	{
 		m_transform.setPosition(h1);
 		loadMatricesToShader();
-		prim->draw("smallSphere");
+		ngl::VAOPrimitives::draw("smallSphere");
 	}
 
 	m_transform.reset();
 	{
-    shader->setUniform("Colour",0.0f,1.0f,0.0f,0.0f);
+    ngl::ShaderLib::setUniform("Colour",0.0f,1.0f,0.0f,0.0f);
 		m_transform.setPosition(h2);
 
     loadMatricesToShader();
-    prim->draw("smallSphere");
+    ngl::VAOPrimitives::draw("smallSphere");
   }
 }
 }
