@@ -7,6 +7,7 @@
 #include <ngl/Random.h>
 #include <ngl/VAOFactory.h>
 #include <ngl/SimpleVAO.h>
+#include <iostream>
 
 NGLScene::NGLScene(int _numTriangles)
 {

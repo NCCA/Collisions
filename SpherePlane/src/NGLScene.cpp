@@ -9,6 +9,7 @@
 #include <ngl/VAOFactory.h>
 #include "MultiBufferIndexVAO.h"
 #include <algorithm>
+#include <iostream>
 
 NGLScene::NGLScene(int _numSpheres)
 {

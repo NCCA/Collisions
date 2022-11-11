@@ -6,6 +6,7 @@
 #include <ngl/ShaderLib.h>
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
+#include <iostream>
 
 NGLScene::NGLScene(int _numSpheres)
 {
